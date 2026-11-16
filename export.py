@@ -205,6 +205,7 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
         },
         "checks": checks,
         "previous": {},
+        "next_lineup": {tid: recommend.next_lineup(team_rows[tid], projections[tid], local_tz) for tid in projections},
         "add_limits": {t.team_id: espn_source.add_limit(settings, raw_teams.get(t.team_id), matchup)
                        for t in league.teams},
         "waiver_ranks": ranks,

@@ -28,6 +28,13 @@ QUESTIONABLE_SPAN = timedelta(days=3)   # questionable is game to game, not for 
 RETURNING_CHANCE = 0.5                  # listed out, but past ESPN's expected return date
 RETURN_RAMP = timedelta(days=7)         # after which a returning player counts in full
 UNKNOWN_RETURN = timedelta(days=14)     # out with no return date: assumed out at least this long
+# A player's fantasy score in a single game typically lands within about a
+# third of their average either way; used to turn projections into a chance
+# of winning the matchup.
+GAME_SPREAD = 0.35
+# The projection itself can be off (minutes, roles, hot and cold weeks), so a
+# team's total gets this share of its projected points as extra spread.
+MODEL_SPREAD = 0.08
 
 
 # Long-term talent, for deciding who is safe to drop: leans on the season and
@@ -150,6 +157,7 @@ def project_team(rows, calendar, days, now, slots):
     games that have already tipped off count as played.
     """
     per_day, games, starts = [], Counter(), Counter()
+    variance = 0.0
     today = now.astimezone(ET).date()
     for period in days:
         game_date = calendar.date_of(period)
@@ -164,6 +172,7 @@ def project_team(rows, calendar, days, now, slots):
                 playing.append((row["player_id"], value, row.get("eligible_slots") or []))
         starters = best_lineup(playing, slots)
         starts.update(starters)
+        variance += sum((GAME_SPREAD * value) ** 2 for key, value, _ in playing if key in starters)
         first_tip = calendar.first_tip(period)
         per_day.append({
             "period": period,
@@ -175,10 +184,12 @@ def project_team(rows, calendar, days, now, slots):
             "open_slots": max(0, len(slots) - len(starters)),
             "benched": len(playing) - len(starters),
             "points": round(sum(value for key, value, _ in playing if key in starters), 1),
+            "values": {key: round(value, 1) for key, value, _ in playing},
         })
     live_days = [d for d in per_day if not d["done"]]
     return {
         "points": round(sum(d["points"] for d in per_day), 1),
+        "variance": round(variance + (MODEL_SPREAD * sum(d["points"] for d in per_day)) ** 2, 1),
         "starts": sum(len(d["starters"]) for d in per_day),
         "benched": sum(d["benched"] for d in live_days),
         "open_slots": sum(d["open_slots"] for d in live_days),

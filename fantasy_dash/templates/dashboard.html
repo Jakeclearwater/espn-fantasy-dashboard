@@ -29,6 +29,13 @@
   --clear-bg: #DFF0E4;
   --unc-ink: #434D5B;
   --unc-bg: #E1E6EC;
+  --band: #14223B;
+  --band-ink: #F3F6FA;
+  --band-muted: #AEBBCC;
+  --band-rule: #2C3D5C;
+  --bar-a: #E8834A;
+  --bar-b: #8FA3C2;
+  --accent: #B4501A;
   --font-head: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color-scheme: light dark;
@@ -53,6 +60,13 @@
     --clear-bg: #163925;
     --unc-ink: #CBD3DD;
     --unc-bg: #2A3443;
+    --band: #080E18;
+    --band-ink: #E4E9F0;
+    --band-muted: #97A2B2;
+    --band-rule: #223047;
+    --bar-a: #F0955C;
+    --bar-b: #6F82A3;
+    --accent: #F0A06A;
   }
 }
 
@@ -64,8 +78,8 @@ body {
   color: var(--ink);
   font: 400 15px/1.5 var(--font-body);
 }
-main { max-width: 1240px; margin: 0 auto; padding: 24px 16px 48px; }
-@media (min-width: 720px) { main { padding: 40px 32px 64px; } }
+main { max-width: 1240px; margin: 0 auto; padding: 22px 16px 48px; }
+@media (min-width: 720px) { main { padding: 28px 32px 64px; } }
 
 h1, h2, h3, .eyebrow, .sheet-role, legend, thead th, .group th, .pill, td.slot, summary {
   font-family: var(--font-head);
@@ -77,38 +91,98 @@ h1, h2, h3, .eyebrow, .sheet-role, legend, thead th, .group th, .pill, td.slot, 
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; }
 
-/* Masthead */
+/* Scoreboard band: the matchup at a glance, like the top of a matchup screen */
+.band { background: var(--band); color: var(--band-ink); border-bottom: 1px solid var(--band-rule); }
+.band-inner { max-width: 1240px; margin: 0 auto; padding: 18px 16px 16px; }
+@media (min-width: 720px) { .band-inner { padding: 22px 32px 18px; } }
+.band-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; }
 .eyebrow {
-  margin: 0 0 6px; color: var(--ink-2);
-  font-weight: 600; font-size: 0.95rem; letter-spacing: 0.06em; text-transform: uppercase;
+  margin: 0; color: var(--band-muted);
+  font-weight: 600; font-size: 0.9rem; letter-spacing: 0.07em; text-transform: uppercase;
 }
-h1 {
-  margin: 0; font-weight: 700; line-height: 1.05;
-  font-size: clamp(1.9rem, 4.2vw, 2.9rem);
-}
-.subhead { margin: 8px 0 0; color: var(--ink-2); font-size: 1.05rem; }
-.stamp {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 24px;
-  margin-top: 20px; padding: 10px 0;
-  border-top: 2px solid var(--rule-strong); border-bottom: 1px solid var(--rule);
-}
-.stamp-time { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: 1.3rem; }
-.stamp-age { margin-left: 8px; font-weight: 500; color: var(--muted); white-space: nowrap; }
-.stamp-age.stale { color: var(--q-ink); }
-.stamp-note { margin: 0; color: var(--muted); font-size: 0.9rem; }
-.stamp-note a { color: var(--ink); }
+.band .picker { color: var(--band-muted); }
+.band .picker select { background: transparent; color: var(--band-ink); border-color: var(--band-muted); }
+.band .picker select option { color: #14223B; background: #fff; }
+.scoreboard { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px 16px; margin-top: 18px; align-items: end; }
+.side-b { text-align: right; }
+.team-name { margin: 0; font-family: var(--font-head); font-weight: 700; font-size: clamp(1.25rem, 3.2vw, 2rem); line-height: 1.05; }
+.team-owner { margin: 2px 0 0; color: var(--band-muted); font-size: 0.86rem; }
+.team-injuries { margin: 6px 0 0; font-size: 0.86rem; color: var(--band-ink); }
+.team-points { margin: 10px 0 0; font-family: var(--font-head); font-weight: 700; font-size: clamp(2.2rem, 7vw, 3.6rem); line-height: 0.95; font-variant-numeric: tabular-nums; }
+.score-label { margin: 0; text-align: center; color: var(--band-muted); font-family: var(--font-head); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; padding-bottom: 6px; }
+.winbar { display: flex; gap: 3px; height: 10px; margin-top: 14px; }
+.winbar span { display: block; height: 100%; border-radius: 2px; }
+.winbar .a { background: var(--bar-a); }
+.winbar .b { background: var(--bar-b); }
+.win-labels { display: flex; justify-content: space-between; margin: 6px 0 0; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+.win-labels b { font-weight: 600; }
+.band-meta { margin: 10px 0 0; color: var(--band-muted); font-size: 0.88rem; }
+.stamp { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--band-rule); }
+.stamp-time { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; }
+.stamp-age { margin-left: 6px; font-weight: 500; color: var(--band-muted); white-space: nowrap; }
+.stamp-age.stale { color: #FFD58F; }
+.stamp-note { margin: 0; color: var(--band-muted); font-size: 0.86rem; }
+.stamp-note a, .stamp-note code { color: var(--band-ink); }
 .refresh {
-  padding: 6px 14px; cursor: pointer; font: 500 0.92rem var(--font-body);
-  color: var(--page); background: var(--ink); border: 1px solid var(--ink); border-radius: 4px;
+  padding: 5px 14px; cursor: pointer; font: 500 0.9rem var(--font-body);
+  color: var(--band); background: var(--band-ink); border: 1px solid var(--band-ink); border-radius: 4px;
 }
 .refresh:disabled { cursor: progress; opacity: 0.7; }
-.refresh-status { margin: 0; flex-basis: 100%; font-size: 0.9rem; color: var(--ink-2); }
+.refresh-status { margin: 0; flex-basis: 100%; font-size: 0.88rem; color: var(--band-ink); }
 .refresh-status:empty { display: none; }
-.warnings { list-style: none; margin: 12px 0 0; padding: 0; }
+.band :focus-visible { outline-color: var(--band-ink); }
+/* On a phone, keep the band to the essentials so the to-do list is in view. */
+@media (max-width: 600px) {
+  .team-owner, #subhead, .stamp-note { display: none; }
+  .team-injuries { font-size: 0.8rem; }
+  .band-meta { font-size: 0.82rem; }
+  .stamp { margin-top: 10px; padding-top: 8px; }
+}
+.warnings { list-style: none; margin: 0 0 18px; padding: 0; }
 .warnings li { margin-top: 8px; padding-left: 10px; border-left: 3px solid var(--q-ink); font-size: 0.92rem; }
 
-/* Controls */
-.controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 32px; margin: 24px 0 0; }
+/* Tabs */
+.tabs-wrap { position: sticky; top: 0; z-index: 5; background: var(--page); border-bottom: 1px solid var(--rule); }
+.tabs { display: flex; gap: 4px; max-width: 1240px; margin: 0 auto; padding: 0 16px; overflow-x: auto; }
+@media (min-width: 720px) { .tabs { padding: 0 32px; } }
+.tab {
+  flex: none; padding: 12px 14px 10px; cursor: pointer; background: none; border: 0;
+  border-bottom: 3px solid transparent; color: var(--muted);
+  font: 600 1rem var(--font-head); letter-spacing: 0.06em; text-transform: uppercase;
+}
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab:hover { color: var(--ink); }
+.tab:focus-visible { outline-offset: -3px; }
+.panel > .block:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+
+/* To do */
+.todo-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.todo { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: 0 16px; padding: 14px 0; border-top: 1px solid var(--rule); }
+.todo:last-child { border-bottom: 1px solid var(--rule); }
+.impact { text-align: right; }
+.impact b { display: block; font-family: var(--font-head); font-weight: 700; font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.impact span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--font-head); font-weight: 600; }
+.todo-title { margin: 0; font-weight: 600; font-size: 1.02rem; }
+.todo-text { margin: 4px 0 0; color: var(--ink-2); font-size: 0.93rem; max-width: 80ch; }
+.todo .go { margin-top: 6px; }
+.go {
+  padding: 0; cursor: pointer; background: none; border: 0; color: var(--ink);
+  font: 500 0.86rem var(--font-body); text-decoration: underline; text-underline-offset: 3px;
+}
+@media (max-width: 480px) { .todo { grid-template-columns: 4.4rem minmax(0, 1fr); gap: 0 12px; } .impact b { font-size: 1.5rem; } }
+
+/* Best lineup for the next game day */
+.lineup-plan { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 32px; margin-top: 8px; }
+@media (min-width: 720px) { .lineup-plan { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.plan-list { list-style: none; margin: 0; padding: 0; }
+.plan-list li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.plan-list .why { color: var(--muted); font-size: 0.86rem; white-space: nowrap; }
+.plan-list .move { color: var(--clear-ink); font-weight: 600; font-size: 0.82rem; margin-left: 8px; }
+.plan-list .move.sit { color: var(--out-ink); }
+.plan-list h5, .lineup-plan h5 { margin: 0 0 2px; color: var(--muted); font: 600 0.8rem var(--font-head); letter-spacing: 0.07em; text-transform: uppercase; }
+
+/* Controls *//* Controls */
+.controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 32px; margin: 0 0 18px; }
 .controls fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .controls legend {
   padding: 0; margin-bottom: 6px; color: var(--muted);
@@ -375,7 +449,10 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
   }
   body { font-size: 10.5pt; }
   main { max-width: none; padding: 0; }
-  .controls, .show-all, .more, .refresh, .refresh-status, .collapse-toggle { display: none !important; }
+  .controls, .show-all, .more, .refresh, .refresh-status, .collapse-toggle, .tabs-wrap, .go, .band .pickers { display: none !important; }
+  [role="tabpanel"][hidden] { display: block !important; }
+  .band { background: #fff; color: #000; border-bottom: 2px solid #000; }
+  .band-meta, .team-owner, .eyebrow, .stamp-note, .score-label { color: #333; }
   .sheets { grid-template-columns: 1fr; gap: 24px; margin-top: 20px; }
   .table-scroll { overflow: visible; }
   .fa-table, .tx-table { min-width: 0; }
@@ -386,28 +463,79 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
 </style>
 </head>
 <body>
-<main>
-  <header class="masthead">
-    <p class="eyebrow" id="league-line"></p>
-    <h1 id="headline">Injury and waiver watch</h1>
-    <p class="subhead" id="subhead"></p>
+<header class="band">
+  <div class="band-inner">
+    <div class="band-top">
+      <p class="eyebrow" id="league-line"></p>
+      <div class="pickers" role="group" aria-label="Teams to view">
+        <label class="picker" for="team-a">Team <select id="team-a"></select></label>
+        <label class="picker" for="team-b">v <select id="team-b"></select></label>
+      </div>
+    </div>
+    <h1 class="vh" id="headline">Injury and waiver watch</h1>
+    <div class="scoreboard" id="scoreboard"></div>
+    <div class="winbar" id="winbar" role="img"></div>
+    <p class="win-labels" id="win-labels"></p>
+    <p class="band-meta" id="band-meta"></p>
+    <p class="band-meta" id="subhead"></p>
     <div class="stamp">
       <p class="stamp-time" id="generated"></p>
       <p class="stamp-note" id="stamp-note">This page is a snapshot and does not update itself. Run <code>python export.py</code> again for fresh data, or <code>python export.py --serve</code> to open a version with a Refresh button.</p>
       <button type="button" class="refresh" id="refresh" hidden>Refresh data</button>
       <p class="refresh-status" id="refresh-status" role="status" aria-live="polite"></p>
     </div>
-    <ul class="warnings" id="warnings" hidden></ul>
-  </header>
+  </div>
+</header>
 
-  <div class="controls" role="group" aria-label="Display options">
-    <fieldset>
-      <legend>View</legend>
-      <div class="pickers">
-        <label class="picker" for="team-a">Team <select id="team-a"></select></label>
-        <label class="picker" for="team-b">against <select id="team-b"></select></label>
+<div class="tabs-wrap">
+  <div class="tabs" role="tablist" aria-label="Sections">
+    <button type="button" class="tab" role="tab" id="tab-matchup" aria-controls="panel-matchup">Matchup</button>
+    <button type="button" class="tab" role="tab" id="tab-rosters" aria-controls="panel-rosters">Rosters</button>
+    <button type="button" class="tab" role="tab" id="tab-players" aria-controls="panel-players">Players</button>
+    <button type="button" class="tab" role="tab" id="tab-trades" aria-controls="panel-trades">Trades</button>
+    <button type="button" class="tab" role="tab" id="tab-news" aria-controls="panel-news">News</button>
+  </div>
+</div>
+
+<main>
+  <ul class="warnings" id="warnings" hidden></ul>
+
+  <div class="panel" role="tabpanel" id="panel-matchup" aria-labelledby="tab-matchup">
+  <section class="block todo-block" data-collapse="todo" aria-labelledby="todo-title">
+    <div class="block-head"><h2 id="todo-title">To do</h2></div>
+    <div class="block-body" id="todo-body">
+      <p class="section-note" id="todo-note"></p>
+      <ol class="todo-list" id="todo-list"></ol>
+    </div>
+  </section>
+
+  <section class="block" data-collapse="next-lineup" id="next-lineup" aria-labelledby="next-lineup-title">
+    <div class="block-head"><h2 id="next-lineup-title">Best lineup for the next game day</h2></div>
+    <div class="block-body" id="next-lineup-body">
+      <p class="section-note" id="next-lineup-note"></p>
+      <div class="lineup-plan" id="lineup-plan"></div>
+    </div>
+  </section>
+
+  <section class="block outlook" id="outlook" data-collapse="outlook" aria-labelledby="outlook-title">
+    <div class="block-head"><h2 id="outlook-title">The week, day by day</h2></div>
+    <div class="block-body" id="outlook-body">
+      <p class="outlook-lead" id="outlook-lead"></p>
+      <div class="table-scroll" role="region" aria-label="Lineup outlook by day" tabindex="0">
+        <table class="data days-table" id="days-table"></table>
       </div>
-    </fieldset>
+      <ul class="checks" id="lineup-checks"></ul>
+      <details class="method">
+        <summary>How the projection works</summary>
+        <p>Each player's value per game blends the last 15 days (half), the season (30%) and ESPN's projection (20%), with less weight on an average built from only a few games. Players listed out are left out until ESPN's expected return date and then counted at half value; questionable players count at half value for the next few days. When a teammate is out, a player's value goes up by their share of the minutes left behind (see News and opportunities). Each day uses the best lineup the slots allow from the players who have a game, and only starters count. ESPN locks each player at tip-off, so this assumes the lineup is set every day. It's an estimate to compare options, not a forecast to rely on.</p>
+      </details>
+    </div>
+  </section>
+
+  </div>
+
+  <div class="panel" role="tabpanel" id="panel-rosters" aria-labelledby="tab-rosters" hidden>
+  <div class="controls" role="group" aria-label="Roster display options">
     <fieldset>
       <legend>Show</legend>
       <div class="segmented">
@@ -426,37 +554,11 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
         <label for="order-urgent">Most urgent first</label>
       </div>
     </fieldset>
-    <fieldset>
-      <legend>Sections</legend>
-      <div class="button-row">
-        <button type="button" class="plain-button" id="expand-all">Expand all</button>
-        <button type="button" class="plain-button" id="collapse-all">Collapse all</button>
-      </div>
-    </fieldset>
+  </div>
+  <div class="sheets" id="sheets"></div>
   </div>
 
-  <section class="block outlook" id="outlook" data-collapse="outlook" aria-labelledby="outlook-title">
-    <div class="block-head"><h2 id="outlook-title">This week</h2></div>
-    <div class="block-body" id="outlook-body">
-      <p class="outlook-lead" id="outlook-lead"></p>
-      <div class="table-scroll" role="region" aria-label="Lineup outlook by day" tabindex="0">
-        <table class="data days-table" id="days-table"></table>
-      </div>
-      <ul class="checks" id="lineup-checks"></ul>
-      <details class="method">
-        <summary>How the projection works</summary>
-        <p>Each player's value per game blends the last 15 days (half), the season (30%) and ESPN's projection (20%), with less weight on an average built from only a few games. Players listed out are left out until ESPN's expected return date and then counted at half value; questionable players count at half value for the next few days. When a teammate is out, a player's value goes up by their share of the minutes left behind (see News and opportunities). Each day uses the best lineup the slots allow from the players who have a game, and only starters count. ESPN locks each player at tip-off, so this assumes the lineup is set every day. It's an estimate to compare options, not a forecast to rely on.</p>
-      </details>
-    </div>
-  </section>
-
-  <section class="block rosters" data-collapse="rosters" aria-labelledby="rosters-title">
-    <div class="block-head"><h2 id="rosters-title">Rosters</h2></div>
-    <div class="block-body" id="rosters-body">
-      <div class="sheets" id="sheets"></div>
-    </div>
-  </section>
-
+  <div class="panel" role="tabpanel" id="panel-news" aria-labelledby="tab-news" hidden>
   <section class="block news" data-collapse="news" aria-labelledby="news-title">
     <div class="block-head"><h2 id="news-title">News and opportunities</h2></div>
     <div class="block-body" id="news-body">
@@ -482,8 +584,11 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     </div>
   </section>
 
+  </div>
+
+  <div class="panel" role="tabpanel" id="panel-players" aria-labelledby="tab-players" hidden>
   <section class="block waivers" data-collapse="waivers" aria-labelledby="waivers-title">
-    <div class="block-head"><h2 id="waivers-title">Waivers</h2></div>
+    <div class="block-head"><h2 id="waivers-title">Waivers and free agents</h2></div>
     <div class="block-body" id="waivers-body">
       <p class="waiver-summary" id="waiver-summary"></p>
       <details class="waiver-order" id="waiver-order-wrap" hidden>
@@ -501,6 +606,10 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
           <ol class="moves" id="moves-week"></ol>
           <h4>Injured, worth watching</h4>
           <ul class="moves" id="moves-watch"></ul>
+          <details class="method">
+            <summary>How suggestions are picked</summary>
+            <p>Each healthy free agent is tested in the week projection in place of each drop candidate, so game days, positions, open lineup slots and injured teammates all count. Drops are judged on long-term value (mostly the season average and ESPN's projection), so a player coming back from injury isn't mistaken for a bench player. The team's best eight players by long-term value, and anyone rostered in 60% or more of ESPN leagues, are never suggested as drops. Streamers only replace someone who is no better long term.</p>
+          </details>
           <details class="method" id="protected-wrap">
             <summary>Players kept off the drop list</summary>
             <ul class="checks" id="protected"></ul>
@@ -531,6 +640,9 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     </div>
   </section>
 
+  </div>
+
+  <div class="panel" role="tabpanel" id="panel-trades" aria-labelledby="tab-trades" hidden>
   <section class="block trades" data-collapse="trades" aria-labelledby="trades-title">
     <div class="block-head"><h2 id="trades-title">Trade ideas</h2></div>
     <div class="block-body" id="trades-body">
@@ -542,6 +654,8 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
       </details>
     </div>
   </section>
+
+  </div>
 
   <details class="legend-note">
     <summary>How to read the status</summary>
@@ -726,33 +840,93 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
 
   // ----- masthead ----------------------------------------------------------
 
-  function renderMasthead() {
-    const mine = teamA();
-    const opp = teamB();
-    const mineRows = rostersByTeam.get(mine.id) || [];
-    const oppRows = opp ? rostersByTeam.get(opp.id) || [] : [];
-    const a = tally(mineRows);
-    const b = tally(oppRows);
+  // Chance that A's final score beats B's, treating each as normally
+  // distributed around its projection (the spreads come from projection.py).
+  function erf(x) {
+    const t = 1 / (1 + 0.3275911 * Math.abs(x));
+    const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+    return x >= 0 ? y : -y;
+  }
+  function winChance(meanA, varA, meanB, varB) {
+    const spread = Math.sqrt((varA || 0) + (varB || 0));
+    if (!spread) return meanA > meanB ? 1 : meanA < meanB ? 0 : 0.5;
+    return 0.5 * (1 + erf((meanA - meanB) / (spread * Math.SQRT2)));
+  }
+  function matchupOdds(gainA) {
+    const o = DATA.outlook || {};
+    const A = teamA();
+    const B = teamB();
+    if (!B || !o.projections || !o.projections[A.id] || !o.projections[B.id]) return null;
+    const finish = o.projected_finish || {};
+    return winChance((finish[A.id] || 0) + (gainA || 0), o.projections[A.id].variance,
+      finish[B.id] || 0, o.projections[B.id].variance);
+  }
+  function percent(chance) {
+    const p = Math.round(chance * 100);
+    return (p === 0 && chance > 0 ? "<1" : p === 100 && chance < 1 ? ">99" : String(p)) + "%";
+  }
 
-    document.title = "Injury watch: " + mine.name + (opp ? " v " + opp.name : "");
+  function renderMasthead() {
+    const A = teamA();
+    const B = teamB();
+    const o = DATA.outlook || {};
+    const a = tally(rostersByTeam.get(A.id) || []);
+    const b = B ? tally(rostersByTeam.get(B.id) || []) : null;
+
+    document.title = A.name + (B ? " v " + B.name : "") + ": fantasy dashboard";
     const leagueName = DATA.league.name || "";
     const leagueBits = [leagueName];
     if (!leagueName.includes(DATA.league.season)) leagueBits.push(DATA.league.season + " season");
-    if (DATA.league.matchup_period) leagueBits.push("matchup period " + DATA.league.matchup_period);
+    if (DATA.league.matchup_period) leagueBits.push("matchup " + DATA.league.matchup_period);
     setText("league-line", leagueBits.filter(Boolean).join(", "));
+    setText("headline", A.name + (B ? " v " + B.name : ""));
 
-    if (opp) {
-      setText("headline", "Players ruled out: " + a.out + " on " + mine.name + ", " + b.out + " on " + opp.name);
-      setText("subhead", "Questionable or day-to-day: " + a.doubt + " on " + mine.name + ", " + b.doubt + " on " + opp.name);
+    const finish = o.projected_finish || {};
+    const scores = o.scores || {};
+    const injuries = (t) => t.out + " out, " + t.doubt + " questionable" + (t.outActive ? ", " + t.outActive + " out in the lineup" : "");
+    const side = (team, t, cls) => h("div", { class: "side " + cls },
+      h("p", { class: "team-name" }, label(team)),
+      team.owner ? h("p", { class: "team-owner" }, team.owner) : null,
+      h("p", { class: "team-injuries" }, injuries(t)),
+      h("p", { class: "team-points" }, points(finish[team.id])));
+    document.getElementById("scoreboard").replaceChildren(
+      side(A, a, "side-a"),
+      h("p", { class: "score-label" }, "Projected"),
+      B ? side(B, b, "side-b") : h("div", { class: "side side-b" }, h("p", { class: "team-owner" }, "No comparison picked")));
+
+    const chance = matchupOdds(0);
+    const bar = document.getElementById("winbar");
+    const labels = document.getElementById("win-labels");
+    if (chance === null) {
+      bar.hidden = true; labels.hidden = true;
     } else {
-      setText("headline", "Players ruled out: " + a.out + " on " + mine.name);
-      setText("subhead", "Questionable or day-to-day: " + a.doubt + " on " + mine.name + ".");
+      bar.hidden = false; labels.hidden = false;
+      const left = h("span", { class: "a" });
+      const right = h("span", { class: "b" });
+      left.style.flex = String(Math.max(chance, 0.02));
+      right.style.flex = String(Math.max(1 - chance, 0.02));
+      bar.replaceChildren(left, right);
+      bar.setAttribute("aria-label", A.name + " " + percent(chance) + " to win, " + B.name + " " + percent(1 - chance));
+      labels.replaceChildren(h("span", null, h("b", null, percent(chance)), " to win"), h("span", null, h("b", null, percent(1 - chance)), " to win"));
     }
+
+    const meta = [];
+    const projA = o.projections && o.projections[A.id];
+    const projB = B && o.projections && o.projections[B.id];
+    const days = projA ? projA.days.map((d) => d.first_tip).filter(Boolean) : [];
+    if (days.length) meta.push("Matchup " + o.matchup_period + ", " + formatDay(days[0]) + " to " + formatDay(days[days.length - 1]));
+    if (B && typeof scores[A.id] === "number" && (scores[A.id] || scores[B.id])) meta.push("Score so far " + fixed(scores[A.id], 1) + " to " + fixed(scores[B.id] || 0, 1));
+    if (projA) meta.push(projA.starts + (projB ? " v " + projB.starts : "") + " projected starts left");
+    const actual = opponentOf(A.id);
+    if (B && actual !== B.id) meta.push(A.name + " actually plays " + (actual !== null && teamsById.get(actual) ? teamsById.get(actual).name : "nobody") + " this week");
+    setText("band-meta", meta.join(". ") + (meta.length ? "." : ""));
+    setText("subhead", "Players ruled out: " + a.out + " on " + A.name + (B ? ", " + b.out + " on " + B.name : "") +
+      ". Questionable or day-to-day: " + a.doubt + (B ? " and " + b.doubt : "") + ".");
 
     const generated = document.getElementById("generated");
     const when = age(DATA.generated_at);
     generated.replaceChildren(
-      "Generated " + formatDate(DATA.generated_at, true),
+      "Updated " + formatDate(DATA.generated_at, true),
       when.text ? h("span", { class: "stamp-age" + (when.hours >= STALE_HOURS ? " stale" : "") }, "(" + when.text + ")") : null
     );
 
@@ -763,7 +937,150 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     }
   }
 
-  // ----- player details ----------------------------------------------------
+  // ----- to do and the next game day ----------------------------------------
+
+  function goTo(tab, text) {
+    return h("button", { type: "button", class: "go", "data-tab": tab }, text);
+  }
+  function todoItem(impact, unit, title, text, link) {
+    return h("li", { class: "todo" },
+      h("div", { class: "impact" }, h("b", null, impact), h("span", null, unit)),
+      h("div", null, h("p", { class: "todo-title" }, title), text ? h("p", { class: "todo-text" }, text) : null, link || null));
+  }
+  function names(list) {
+    if (list.length < 2) return list.join("");
+    return list.slice(0, -1).join(", ") + " and " + list[list.length - 1];
+  }
+
+  function renderTodo() {
+    const A = teamA();
+    const B = teamB();
+    const mine = isMine(A);
+    const o = DATA.outlook || {};
+    const items = [];
+    const plan = o.next_lineup && o.next_lineup[A.id];
+    if (plan) {
+      const sits = plan.sit.map((x) => x.player + " (" + x.reason + ")");
+      items.push(todoItem(signed(plan.gain, 0), "points that day",
+        (mine ? "Set your lineup for " : "Best lineup for " + A.name + " on ") + formatDay(plan.first_tip),
+        "Start " + names(plan.start.map((x) => x.player)) + "." + (sits.length ? " To make room, bench " + names(sits) + "." : ""),
+        goTo("matchup-lineup", "See the full lineup")));
+    }
+    const s = (DATA.suggestions && DATA.suggestions[A.id]) || {};
+    const stream = (s.streamers || [])[0];
+    if (stream) {
+      const before = matchupOdds(0);
+      const after = matchupOdds(stream.week_gain);
+      const odds = before !== null && B && opponentOf(A.id) === B.id
+        ? " Chance to win: " + percent(before) + " to " + percent(after) + "." : "";
+      items.push(todoItem(signed(stream.week_gain, 0), "points this week",
+        "Add " + stream.add.player + ", drop " + stream.drop.player,
+        stream.how + odds, goTo("players", "See why, and other options")));
+    }
+    const longTerm = (s.long_term || [])[0];
+    if (longTerm && (!stream || longTerm.add.player_id !== stream.add.player_id)) {
+      items.push(todoItem(signed(longTerm.value_gain), "a game, long term",
+        "Add " + longTerm.add.player + ", drop " + longTerm.drop.player, longTerm.how, goTo("players", "See why")));
+    }
+    const trade = (((DATA.trades || {}).by_team || {})[A.id] || [])[0];
+    if (trade) {
+      items.push(todoItem(signed(trade.my_gain, 0), "points, rest of season",
+        "Offer " + trade.partner.name + " " + names(trade.give.map((x) => x.player)) + " for " + names(trade.get.map((x) => x.player)),
+        (trade.kind === "both_gain" ? "Their projection goes up too (" : "Close to even for them (") + signed(trade.their_gain, 0) + "), which makes it a realistic ask.",
+        goTo("trades", "See the trade ideas")));
+    }
+    const roster = (rostersByTeam.get(A.id) || []).filter((r) => r.slot !== "IR");
+    const boosted = roster.map((r) => ({ r, bump: (r.boosts || []).reduce((t, b) => t + b.bump, 0) }))
+      .filter((x) => x.bump >= 2).sort((x, y) => y.bump - x.bump)[0];
+    if (boosted) {
+      items.push(todoItem(signed(boosted.bump), "a game, for now",
+        "Keep " + boosted.r.player + " in the lineup",
+        names(boosted.r.boosts.map((b) => b.from)) + (boosted.r.boosts.length > 1 ? " are" : " is") + " out, so " + boosted.r.player + " should see more of the ball.",
+        goTo("news", "See who else benefits")));
+    }
+    const benched = roster.find((r) => r.signals && r.signals[0] && r.signals[0].tags.includes("Role down"));
+    if (benched) {
+      items.push(todoItem("Note", "role change", "Check " + possessive(benched.player) + " minutes", "\u201c" + benched.signals[0].evidence + "\u201d", goTo("news", "See the notes")));
+    }
+    setText("todo-note", items.length
+      ? "The changes most worth making for " + (mine ? "your team" : A.name) + ", with how many points each is projected to add."
+      : "");
+    document.getElementById("todo-list").replaceChildren(...(items.length ? items
+      : [h("li", { class: "todo" }, h("div", { class: "impact" }), h("div", null, h("p", { class: "todo-title" }, "Nothing worth changing right now.")))]));
+  }
+
+  function renderNextLineup() {
+    const A = teamA();
+    const o = DATA.outlook || {};
+    const proj = o.projections && o.projections[A.id];
+    const section = document.getElementById("next-lineup");
+    const day = proj && proj.days.find((d) => !d.done && d.available);
+    if (!day) { section.hidden = true; return; }
+    section.hidden = false;
+    const roster = rostersByTeam.get(A.id) || [];
+    const values = day.values || {};
+    const starters = new Set(day.starters);
+    const plan = o.next_lineup && o.next_lineup[A.id];
+    setText("next-lineup-title", "Best lineup for " + formatDay(day.first_tip || day.date));
+    setText("next-lineup-note", plan
+      ? "Starting these instead of the current lineup adds about " + plan.gain.toFixed(0) + " points that day."
+      : "The current lineup is already the best for that day.");
+    const start = roster.filter((r) => starters.has(r.player_id)).sort((x, y) => values[y.player_id] - values[x.player_id]);
+    const moveIn = new Set(plan ? plan.start.map((x) => x.player_id) : []);
+    const moveOut = new Set(plan ? plan.sit.map((x) => x.player_id) : []);
+    const bench = roster.filter((r) => !starters.has(r.player_id));
+    const why = (r) => r.slot === "IR" ? "on IR" : values[r.player_id] === undefined
+      ? (r.status === "Out" ? "out" : "no game") : "projected below the starters";
+    document.getElementById("lineup-plan").replaceChildren(
+      h("div", null, h("h5", null, "Start (" + start.length + " of " + (o.slots || 10) + ")"), h("ul", { class: "plan-list" }, start.map((r) =>
+        h("li", null, h("span", null, h("span", { class: "player-name" }, r.player),
+          moveIn.has(r.player_id) ? h("span", { class: "move" }, "move in") : null),
+          h("span", { class: "why" }, values[r.player_id].toFixed(1) + " projected"))))),
+      h("div", null, h("h5", null, "Bench"), h("ul", { class: "plan-list" }, bench.map((r) =>
+        h("li", null, h("span", null, h("span", { class: "player-name" }, r.player),
+          moveOut.has(r.player_id) ? h("span", { class: "move sit" }, "move out") : null),
+          h("span", { class: "why" }, why(r)))))));
+  }
+
+  // ----- tabs ----------------------------------------------------------------
+
+  const TAB_KEY = "fantasy-dash-tab";
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  function selectTab(name, focus) {
+    const tab = document.getElementById("tab-" + name) || tabs[0];
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+    }
+    if (focus) tab.focus();
+    try { localStorage.setItem(TAB_KEY, tab.id.slice(4)); } catch (e) { /* not essential */ }
+  }
+  tabs.forEach((tab, i) => {
+    tab.addEventListener("click", () => selectTab(tab.id.slice(4)));
+    tab.addEventListener("keydown", (event) => {
+      const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      selectTab(tabs[(next + tabs.length) % tabs.length].id.slice(4), true);
+    });
+  });
+  // "See ..." links in the to-do list jump to the right tab (and section).
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest(".go");
+    if (!link) return;
+    const target = link.getAttribute("data-tab");
+    if (target === "matchup-lineup") {
+      selectTab("matchup");
+      document.getElementById("next-lineup").scrollIntoView({ block: "start" });
+    } else {
+      selectTab(target);
+      document.querySelector(".tabs-wrap").scrollIntoView({ block: "start" });
+    }
+  });
+
+  // ----- player details ----------------------------------------------------  // ----- player details ----------------------------------------------------
 
   // A "Details" button that opens a panel for one player. Open panels are
   // remembered, so they stay open when the rosters are filtered or re-sorted.
@@ -891,7 +1208,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     const projB = B && o.projections[B.id];
     const days = projA.days;
     const tips = days.map((d) => d.first_tip).filter(Boolean);
-    setText("outlook-title", "This week: matchup " + o.matchup_period + ", " + A.name + (B ? " against " + B.name : ""));
+    setText("outlook-title", "The week, day by day");
 
     const lead = [];
     if (tips.length) lead.push(formatDay(tips[0]) + " to " + formatDay(tips[tips.length - 1]) + " (your time). ");
@@ -900,15 +1217,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
       lead.push(A.name + " actually plays " + (actual !== null && teamsById.get(actual) ? teamsById.get(actual).name : "nobody") +
         " this matchup; this compares the two teams' weeks. ");
     }
-    const scores = o.scores || {};
-    const started = days.some((d) => d.done) || scores[A.id] || (B && scores[B.id]);
-    if (started && typeof scores[A.id] === "number") {
-      lead.push("Score so far: ", h("b", null, fixed(scores[A.id], 1) + (B ? " to " + fixed(scores[B.id] || 0, 1) : "")), ". ");
-    }
-    const finish = o.projected_finish || {};
-    lead.push("Projected finish: ", h("b", null, A.name + " " + points(finish[A.id])));
-    if (B && projB) lead.push(", ", h("b", null, B.name + " " + points(finish[B.id])));
-    lead.push(". Projected starts left: " + projA.starts + " for " + A.name + (B && projB ? ", " + projB.starts + " for " + B.name : "") + ".");
+    lead.push("Starters with a game each day, and the points they're projected to score. ");
     const last = o.previous && o.previous[A.id];
     if (last) {
       lead.push(" " + A.name + "'s matchup " + last.matchup_period + (last.opponent ? " against " + last.opponent.name : "") +
@@ -975,10 +1284,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     const s = (DATA.suggestions && DATA.suggestions[A.id]) || {};
     const limit = DATA.outlook && DATA.outlook.add_limits && DATA.outlook.add_limits[A.id];
     setText("targets-title", "Who to target" + (isMine(A) ? "" : " for " + A.name));
-    const note = ["Each suggestion is tested in " + (isMine(A) ? "your" : possessive(A.name)) + " week projection in place of one of the weakest players, " +
-      "so game days, positions, open slots and injured teammates all count. Drops are judged on long-term value (mostly the season and ESPN's projection), " +
-      "so a player coming back from injury isn't mistaken for a bench player, and the team's best eight players and anyone rostered in 60% or more of ESPN leagues are never suggested as drops. " +
-      "Suggestions in a list are alternatives, not a sequence."];
+    const note = ["Each pickup is tested in " + (isMine(A) ? "your" : possessive(A.name)) + " week projection in place of the weakest player who isn't a keeper. Suggestions in a list are alternatives."];
     if (limit && limit.limit) {
       note.push(limit.per_day
         ? "The league allows " + plural(limit.limit, "add") + " a day."
@@ -1444,6 +1750,8 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
   }
   function renderTeams() {
     renderMasthead();
+    renderTodo();
+    renderNextLineup();
     renderOutlook();
     renderSheets();
     renderNews();
@@ -1471,14 +1779,6 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     saveState();
     renderTeams();
   });
-  document.getElementById("expand-all").addEventListener("click", () => {
-    sectionToggles.forEach((t) => t.apply(true));
-    saveCollapsed();
-  });
-  document.getElementById("collapse-all").addEventListener("click", () => {
-    sectionToggles.forEach((t) => t.apply(false));
-    saveCollapsed();
-  });
   document.getElementById("fa-toggle").addEventListener("click", () => {
     state.faExpanded = !state.faExpanded;
     renderFreeAgents();
@@ -1498,6 +1798,9 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
   syncControls();
   setupRefresh();
   setupCollapsibles();
+  let savedTab = "matchup";
+  try { savedTab = localStorage.getItem(TAB_KEY) || "matchup"; } catch (e) { /* default */ }
+  selectTab(savedTab);
   renderTeams();
   renderFreeAgents();
   renderFooter();

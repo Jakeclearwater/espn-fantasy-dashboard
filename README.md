@@ -26,7 +26,17 @@ It also prints a short summary: your players who are out or questionable, the we
 
 ## What's on the dashboard
 
-The bar at the top picks which team to view and which to compare it with (any two teams in the league; it starts on yours and your opponent this week). Every section and sub-section has a Hide/Show button, with Expand all and Collapse all beside the pickers; the page remembers what you've closed.
+The top of the page is a scoreboard for the picked team and its opponent (any two teams in the league; it starts on yours and your opponent this week): projected finishes, the chance each team wins, injuries and how many starts each has left. The chance to win treats each team's final score as uncertain by how much single games swing plus some room for the projection being off.
+
+Below it, the page is split into tabs:
+
+- **Matchup.** A to-do list of the changes most worth making, each with the points it's projected to add (and, for a pickup, how it moves the chance to win): lineup changes for the next game day, the best pickup, the best trade idea, teammates' injuries worth knowing about and role changes in the latest notes. Then the best lineup for the next game day, and the week day by day.
+- **Rosters.** The two roster sheets, with the injury details described below.
+- **Players.** Who to target on waivers, the top free agents and recent league transactions.
+- **Trades.** Trade ideas for the picked team.
+- **News.** Injuries that open up minutes, and what the latest notes say.
+
+Every section has a Hide/Show button, and the page remembers the tab and sections you left open.
 
 - **This week.** The matchup still being played, or the next one once the current one has no games left, with the score so far, a projected finish, and a day-by-day grid of how many of each team's players have games. Days with empty lineup slots are highlighted, and a short list of lineup checks points out things like an out player in an active slot.
 - **Roster sheets.** Your team and your opponent's, with each player's status, injury, latest note, games left this matchup and a source line. Toggles switch between all players and injury concerns, and between lineup order and most urgent first.

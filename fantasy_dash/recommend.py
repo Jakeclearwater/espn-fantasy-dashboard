@@ -248,3 +248,40 @@ def lineup_checks(rows, projection, slot_counts, local_tz=None, possessive="your
         checks.append(f"{Possessive} lineup is full on {_join(labels)}, so {total} game{'s' if total != 1 else ''} "
                       f"would sit on {possessive} bench.")
     return checks
+
+
+def next_lineup(rows, projection, local_tz=None):
+    """Start and sit changes for the next day with games still to play.
+
+    Compares who is in an active slot now (ESPN carries a lineup forward
+    day to day) with the best lineup for that day's games. Returns None when
+    nothing would change.
+    """
+    day = next((d for d in projection["days"] if not d["done"] and d["available"]), None)
+    if not day:
+        return None
+    values = {int(k): v for k, v in day["values"].items()}
+    best = set(day["starters"])
+    active = [r for r in rows if r["slot"] not in ("Bench", "IR")]
+    current = sum(values.get(r["player_id"], 0) for r in active)
+    gain = day["points"] - current
+    start = [r for r in rows if r["player_id"] in best and r["slot"] == "Bench"]
+    if not start or gain < 0.5:
+        return None
+    sit = []
+    for row in active:
+        if row["player_id"] in best:
+            continue
+        if row["player_id"] not in values:
+            reason = "out" if row["status"] == "Out" else "no game"
+        else:
+            reason = "lower projection"
+        sit.append({"player": row["player"], "player_id": row["player_id"], "slot": row["slot"], "reason": reason})
+    return {
+        "period": day["period"],
+        "first_tip": day["first_tip"],
+        "start": [{"player": r["player"], "player_id": r["player_id"], "value": values[r["player_id"]],
+                   "positions": r.get("positions")} for r in sorted(start, key=lambda r: -values[r["player_id"]])],
+        "sit": sit,
+        "gain": round(gain, 1),
+    }
