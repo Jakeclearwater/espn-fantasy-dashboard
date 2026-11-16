@@ -1,0 +1,8 @@
+# ESPN cookies. Never commit or publish this file.
+fantasy_dash/local_secrets.py
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+out/

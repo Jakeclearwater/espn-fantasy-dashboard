@@ -1,0 +1,49 @@
+# Runs the export on GitHub every two hours and publishes the dashboard with
+# GitHub Pages. Use "Run workflow" on the Actions tab to refresh it now.
+# Needs ESPN_S2 and SWID as repository secrets (Settings > Secrets and
+# variables > Actions) and Pages set to "GitHub Actions" (Settings > Pages).
+name: Publish dashboard
+
+on:
+  schedule:
+    - cron: "17 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      TZ: Pacific/Auckland  # notes like "Tue 17 Nov, 1:00pm" are written in NZ time
+      ESPN_S2: ${{ secrets.ESPN_S2 }}
+      SWID: ${{ secrets.SWID }}
+      DASHBOARD_REFRESH_EVERY: "2 hours"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python export.py
+      - name: Prepare the site
+        run: |
+          mkdir -p _site
+          cp out/dashboard.html _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
