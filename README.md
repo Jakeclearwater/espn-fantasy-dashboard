@@ -50,7 +50,9 @@ The easiest way to do all of that is to double-click **Open Dashboard.command** 
 
 The repository includes a GitHub workflow (`.github/workflows/publish.yml`) that runs the export about every two hours and publishes the dashboard with GitHub Pages, so it's available at a link you can share, with your computer off. Anyone with the link can view it.
 
-One-off setup on GitHub:
+The quickest way to set it up is to double-click **Set Up GitHub.command**. It signs you in to GitHub (in your browser, the first time), creates the repository, pushes the code, stores your ESPN cookies as encrypted secrets straight from `fantasy_dash/local_secrets.py`, turns on Pages and publishes. Run it again whenever you want to push changes or your cookies expire. It needs GitHub's command-line tool (`brew install gh`).
+
+To do the same by hand:
 
 1. **Add your cookies as secrets.** In the repository, go to Settings > Secrets and variables > Actions > New repository secret. Add `ESPN_S2` and `SWID` with the same values as in `fantasy_dash/local_secrets.py`. GitHub keeps them encrypted, and they never appear in the code or the page.
 2. **Turn on Pages.** Go to Settings > Pages and set Source to "GitHub Actions".
