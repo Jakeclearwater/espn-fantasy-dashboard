@@ -51,9 +51,12 @@ def test_trade_ideas_help_you_without_costing_them_much(exported):
     ideas = data["trades"]
     assert ideas["deadline"] is None and not ideas["deadline_passed"]
     assert ideas["horizon"]["days"] > 7
-    partners = [t["partner"]["id"] for t in ideas["suggestions"]]
-    assert len(partners) == len(set(partners))  # one idea per team
-    for trade in ideas["suggestions"]:
+    assert set(ideas["by_team"]) == {9, 4, 2}  # worked out for every team
+    every = [t for team_ideas in ideas["by_team"].values() for t in team_ideas]
+    for team_id, team_ideas in ideas["by_team"].items():
+        partners = [t["partner"]["id"] for t in team_ideas]
+        assert len(partners) == len(set(partners)) and team_id not in partners  # one idea per other team
+    for trade in every:
         assert trade["my_gain"] >= 100
         assert trade["their_gain"] >= -THEIR_MAX_LOSS * 100 * abs(trade["their_gain_pct"] or 1) - 1
         assert trade["kind"] == ("both_gain" if trade["their_gain"] >= 0 else "close")
@@ -62,14 +65,22 @@ def test_trade_ideas_help_you_without_costing_them_much(exported):
             two, one = sides if len(sides[0]) == 2 else sides[::-1]
             assert max(p["value"] for p in two) >= STAR_SHARE * one[0]["value"] - 0.1
         assert trade["reasons"] is not None
-    traded = {p["player_id"] for t in ideas["suggestions"] for p in t["give"] + t["get"]}
+    traded = {p["player_id"] for t in every for p in t["give"] + t["get"]}
     assert traded <= set(int(k) for k in data["details"])  # every traded player has a details panel
+
+
+def test_other_teams_ideas_are_worded_for_that_team(exported):
+    _, data = exported
+    for team_id, team_ideas in data["trades"]["by_team"].items():
+        for trade in team_ideas:
+            text = " ".join(trade["reasons"])
+            assert ("you'd" in text) <= (team_id == 9)  # "you" only ever means your own team
 
 
 def test_no_ideas_after_the_deadline(fake_league, now, fake_fetch):
     fake_league.settings.trade_deadline = int(datetime(2026, 11, 1, tzinfo=timezone.utc).timestamp() * 1000)
     _, data = build_export(fake_league, "Fish 'n Chips", 6, 7, now, fetch_reports=fake_fetch, local_tz=NZ)
-    assert data["trades"]["deadline_passed"] and data["trades"]["suggestions"] == []
+    assert data["trades"]["deadline_passed"] and all(ideas == [] for ideas in data["trades"]["by_team"].values())
 
 
 def test_a_depth_for_star_trade_that_helps_both_teams(now):
@@ -94,4 +105,4 @@ def test_a_depth_for_star_trade_that_helps_both_teams(now):
     assert trade["kind"] == "both_gain"
     assert trade["my_gain"] == 14 * 20 and trade["their_gain"] == 2 * 20  # per day, over 20 days
     assert trade["you_add"]["player_id"] == 999 and trade["they_drop"]["value"] == 7
-    assert trade["reasons"][0].startswith("Turns two of your players into one stronger one")
+    assert trade["reasons"][0].startswith("Turns two players into one stronger one")

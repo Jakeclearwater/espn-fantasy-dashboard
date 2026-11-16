@@ -163,7 +163,7 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
         name = espn_source.team_label(team)
         checks[team.team_id] = recommend.lineup_checks(
             roster, projections[team.team_id], slot_counts, local_tz,
-            possessive="your" if mine_now else f"{name}'s")
+            possessive="your" if mine_now else name + ("'" if name.endswith("s") else "'s"))
         suggestions[team.team_id] = recommend.suggest_moves(
             roster, free_agents, calendar, matchup_days, now, slots, ranks.get(team.team_id), len(league.teams),
             subject="you're" if mine_now else f"{name} is", local_tz=local_tz)
@@ -171,7 +171,7 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
     log("Looking for trades...")
     deadline_ms = getattr(league.settings, "trade_deadline", 0)
     deadline = datetime.fromtimestamp(deadline_ms / 1000, tz=timezone.utc) if deadline_ms else None
-    trade_ideas = trades.suggest_trades(
+    trade_ideas = trades.suggest_trades_for_all(
         rows, my_team.team_id, {t.team_id: team_summary(t) for t in league.teams}, free_agents,
         calendar, now, slots, slot_counts, league.finalScoringPeriod, deadline)
 
@@ -204,14 +204,22 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
             tid: round((scores.get(tid) or 0 if is_current else 0) + p["points"], 1) for tid, p in projections.items()
         },
         "checks": checks,
-        "previous": None,
-        "add_limit": espn_source.add_limit(settings, raw_teams.get(my_team.team_id), matchup),
+        "previous": {},
+        "add_limits": {t.team_id: espn_source.add_limit(settings, raw_teams.get(t.team_id), matchup)
+                       for t in league.teams},
+        "waiver_ranks": ranks,
     }
-    if not is_current and scores.get(my_team.team_id) is not None:
-        last = espn_source.find_opponent(league, my_team)
-        outlook["previous"] = {"matchup_period": league.currentMatchupPeriod, "opponent": team_summary(last),
-                               "mine": scores[my_team.team_id],
-                               "theirs": scores.get(last.team_id) if last else None}
+    if not is_current and scores:
+        # The matchup just finished, for every team: score and who it was against.
+        last_pairs = espn_source.matchup_pairs(league, league.currentMatchupPeriod)
+        teams_by_id = {t.team_id: t for t in league.teams}
+        for team_id, score in scores.items():
+            other = last_pairs.get(team_id)
+            outlook["previous"][team_id] = {
+                "matchup_period": league.currentMatchupPeriod,
+                "opponent": team_summary(teams_by_id.get(other)) if other is not None else None,
+                "mine": score, "theirs": scores.get(other) if other is not None else None,
+            }
 
     generated_at = now.isoformat(timespec="seconds")
     team_names = {r["player_id"]: r["team"] for r in rows}

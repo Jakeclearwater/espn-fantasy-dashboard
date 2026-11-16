@@ -42,7 +42,7 @@ def _outlook_lines(data):
             gain = (f"{move['value_gain']:+.1f} a game long term" if key == "long_term"
                     else f"{move['week_gain']:+.0f} projected points this matchup")
             lines.append(f"  {label}: add {move['add']['player']}, drop {move['drop']['player']} ({gain})")
-    trades = (data.get("trades") or {}).get("suggestions") or []
+    trades = ((data.get("trades") or {}).get("by_team") or {}).get(mine) or []
     for trade in trades[:2]:
         give = " + ".join(p["player"] for p in trade["give"])
         get = " + ".join(p["player"] for p in trade["get"])

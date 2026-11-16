@@ -1,5 +1,6 @@
-"""Trade ideas: swaps with other teams that raise your projected points for
-the rest of the season while costing the other team little or nothing.
+"""Trade ideas: swaps with other teams that raise a team's projected points
+for the rest of the season while costing the other team little or nothing.
+Worked out for every team, so any team can be viewed on the dashboard.
 
 Each roster is projected day by day to the end of the fantasy season: every
 day the best lineup is picked from the players with a game, and only
@@ -13,7 +14,9 @@ The other team's projection matters as much as yours: an offer that leaves
 them clearly worse off is unlikely to be accepted, so those are left out.
 """
 
+import os
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor
 from datetime import date
 from itertools import combinations
 
@@ -162,17 +165,19 @@ def _day(iso):
     return f"{day:%a} {day.day} {day:%b}"
 
 
-def _reasons(trade, partner_name):
+def _reasons(trade, partner_name, team_name=None):
+    """team_name: the team the idea is for, or None when it's yours."""
     reasons = []
     give, get = trade["give"], trade["get"]
+    would = f"{team_name} would" if team_name else "you'd"
     if len(give) == 2:
         added = trade["you_add"]
-        reasons.append("Turns two of your players into one stronger one" +
+        reasons.append("Turns two players into one stronger one" +
                        (f", and frees a roster spot for {added['player']} ({added['value']:.1f} a game)." if added else "."))
     if len(get) == 2:
         dropped = trade["you_drop"]
         reasons.append("Adds depth for busy days" +
-                       (f"; to make room you'd drop {dropped['player']} ({dropped['value']:.1f} a game)." if dropped else "."))
+                       (f"; to make room {would} drop {dropped['player']} ({dropped['value']:.1f} a game)." if dropped else "."))
     if trade["they_drop"]:
         reasons.append(f"{partner_name} would need to drop {trade['they_drop']['player']}.")
     if trade["they_add"]:
@@ -201,8 +206,8 @@ def _reasons(trade, partner_name):
 
 
 def suggest_trades(rows, my_team_id, teams, free_agents, calendar, now, slots, slot_counts,
-                   last_period, deadline=None):
-    """Ranked trade ideas with every other team.
+                   last_period, deadline=None, team_name=None):
+    """Ranked trade ideas for one team (my_team_id) with every other team.
 
     rows: every rostered player (from espn_source.roster_rows, reconciled).
     teams: {team id: {"id", "name", "owner"}}.
@@ -307,10 +312,41 @@ def suggest_trades(rows, my_team_id, teams, free_agents, calendar, now, slots, s
         per_partner[partner] += 1
         for p in mine_out:
             per_player[p] += 1
-        trade["reasons"] = _reasons(trade, trade["partner"]["name"])
+        trade["reasons"] = _reasons(trade, trade["partner"]["name"], team_name)
         del trade["score"]
         chosen.append(trade)
         if len(chosen) == SUGGESTIONS:
             break
     result["suggestions"] = chosen
     return result
+
+
+def _ideas_for(args):
+    rows, team_id, teams, free_agents, calendar, now, slots, slot_counts, last_period, deadline, team_name = args
+    return team_id, suggest_trades(rows, team_id, teams, free_agents, calendar, now, slots, slot_counts,
+                                   last_period, deadline, team_name)["suggestions"]
+
+
+def suggest_trades_for_all(rows, my_team_id, teams, free_agents, calendar, now, slots, slot_counts,
+                           last_period, deadline=None):
+    """Trade ideas for every team, so any team can be picked on the dashboard.
+
+    Each team's search is independent, so they run in parallel processes,
+    falling back to one at a time where that isn't possible. Returns the
+    shared horizon and deadline, plus {team id: suggestions}.
+    """
+    summary = suggest_trades([], my_team_id, teams, [], calendar, now, slots, slot_counts, last_period, deadline)
+    summary["by_team"] = {}
+    del summary["suggestions"]
+    if summary["deadline_passed"] or not summary["horizon"]["days"]:
+        summary["by_team"] = {team_id: [] for team_id in teams}
+        return summary
+    jobs = [(rows, team_id, teams, free_agents, calendar, now, slots, slot_counts, last_period, deadline,
+             None if team_id == my_team_id else teams[team_id]["name"]) for team_id in teams]
+    try:
+        with ProcessPoolExecutor(max_workers=min(len(jobs), os.cpu_count() or 1)) as pool:
+            results = list(pool.map(_ideas_for, jobs))
+    except Exception:  # e.g. no process support where it runs: do them in turn
+        results = [_ideas_for(job) for job in jobs]
+    summary["by_team"] = dict(results)
+    return summary

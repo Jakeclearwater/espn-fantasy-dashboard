@@ -17,13 +17,16 @@ def test_week_outlook_looks_ahead_to_the_next_matchup(data):
     assert outlook["matchup_period"] == 5 and not outlook["is_current"]
     assert data["opponent"]["name"] == "Evil Larry"  # next week's opponent, not this week's
     assert outlook["opponents"][MINE] == 4 and outlook["opponents"][2] is None
-    assert outlook["previous"] == {"matchup_period": 4, "mine": 1050.5, "theirs": 980.0,
-                                   "opponent": {"id": 2, "name": "Third Wheel", "owner": "Sam Other"}}
+    assert outlook["previous"][MINE] == {"matchup_period": 4, "mine": 1050.5, "theirs": 980.0,
+                                         "opponent": {"id": 2, "name": "Third Wheel", "owner": "Sam Other"}}
+    assert outlook["previous"][2]["opponent"]["name"] == "Fish 'n Chips"  # every team's last result
     assert set(outlook["projections"]) == {MINE, 4, 2}  # every team, for the team picker
     mine = outlook["projections"][MINE]
     assert len(mine["days"]) == 7
     assert mine["points"] > 0 and outlook["projected_finish"][MINE] == round(mine["points"], 1)
-    assert outlook["add_limit"] == {"limit": 1, "per_day": True, "used_this_matchup": 1}
+    assert outlook["add_limits"][MINE] == {"limit": 1, "per_day": True, "used_this_matchup": 1}
+    assert outlook["add_limits"][4]["used_this_matchup"] == 0
+    assert outlook["waiver_ranks"] == {9: 3, 4: 1, 2: 2}
 
 
 def test_out_players_and_ir_sit_out_the_projection(data):

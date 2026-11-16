@@ -34,7 +34,7 @@ The bar at the top picks which team to view and which to compare it with (any tw
 - **News and opportunities.** Regulars who are out this week, the minutes and shots they leave behind, and which teammates (yours, other teams' or free agents) are best placed to take them, with the projected boost. Below that, what the latest Rotowire notes say about roles, returns and teammates being out, with the sentence that shows it.
 - **Who to target.** Suggested adds and drops in three lists: the best adds for the rest of the season, streamers for this matchup, and injured free agents worth watching. Each one says why and how the player can be added.
 - **Free agents and transactions.** The top free agents by last-15-day average and the league's recent moves.
-- **Trade ideas.** Up to five trades, one per team, that raise your projected points for the rest of the season while leaving the other team better off or close to even. Each shows both sides, the projected effect on each team, and the reasons, with a Details button for every player involved.
+- **Trade ideas.** Up to five trades, one per other team, that raise the picked team's projected points for the rest of the season while leaving the other team better off or close to even. Worked out for every team, so switching the team picker switches the ideas too. Each shows both sides, the projected effect on each team, and the reasons, with a Details button for every player involved.
 
 The dashboard file is a snapshot and doesn't update itself. For a page with a Refresh button, run:
 
@@ -150,7 +150,7 @@ Suggestions in a list are alternatives for the same roster spot. They're worked 
 
 Every roster in the league is projected day by day to the end of the fantasy season, with the same player values and lineup rules as the week projection. Injured players count from ESPN's expected return date (at half value for their first week back); a player out with no return date is assumed out for at least two weeks.
 
-For each other team, one-for-one, two-for-one and one-for-two swaps are tested. After a trade, a team with an open roster spot adds the best healthy free agent, and a team with one player too many drops its weakest (or moves an injured player to a free IR slot). A trade is suggested only if:
+For every team, one-for-one, two-for-one and one-for-two swaps with each other team are tested (the teams are searched in parallel, so this takes a few seconds). After a trade, a team with an open roster spot adds the best healthy free agent, and a team with one player too many drops its weakest (or moves an injured player to a free IR slot). A trade is suggested only if:
 
 - it raises your projection by at least 100 points,
 - the other team ends up better off or within half a percent of where they were, and

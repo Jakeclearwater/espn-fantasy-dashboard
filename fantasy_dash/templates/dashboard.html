@@ -722,6 +722,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
   const isMine = (team) => Boolean(team) && team.id === DATA.my_team.id;
   // How a team is referred to in sentences: "you" for yours, its name otherwise.
   const label = (team) => (isMine(team) ? team.name + " (you)" : team.name);
+  const possessive = (name) => name + (/s$/i.test(name) ? "'" : "'s");
 
   // ----- masthead ----------------------------------------------------------
 
@@ -908,9 +909,10 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     lead.push("Projected finish: ", h("b", null, A.name + " " + points(finish[A.id])));
     if (B && projB) lead.push(", ", h("b", null, B.name + " " + points(finish[B.id])));
     lead.push(". Projected starts left: " + projA.starts + " for " + A.name + (B && projB ? ", " + projB.starts + " for " + B.name : "") + ".");
-    if (o.previous && isMine(A)) {
-      lead.push(" Matchup " + o.previous.matchup_period + (o.previous.opponent ? " against " + o.previous.opponent.name : "") +
-        " ended " + fixed(o.previous.mine, 1) + " to " + fixed(o.previous.theirs, 1) + ".");
+    const last = o.previous && o.previous[A.id];
+    if (last) {
+      lead.push(" " + A.name + "'s matchup " + last.matchup_period + (last.opponent ? " against " + last.opponent.name : "") +
+        " ended " + fixed(last.mine, 1) + (typeof last.theirs === "number" ? " to " + fixed(last.theirs, 1) : "") + ".");
     }
     document.getElementById("outlook-lead").replaceChildren(...lead);
 
@@ -971,16 +973,17 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
   function renderSuggestions() {
     const A = teamA();
     const s = (DATA.suggestions && DATA.suggestions[A.id]) || {};
-    const limit = DATA.outlook && DATA.outlook.add_limit;
+    const limit = DATA.outlook && DATA.outlook.add_limits && DATA.outlook.add_limits[A.id];
     setText("targets-title", "Who to target" + (isMine(A) ? "" : " for " + A.name));
-    const note = ["Each suggestion is tested in " + (isMine(A) ? "your" : A.name + "'s") + " week projection in place of one of the weakest players, " +
+    const note = ["Each suggestion is tested in " + (isMine(A) ? "your" : possessive(A.name)) + " week projection in place of one of the weakest players, " +
       "so game days, positions, open slots and injured teammates all count. Drops are judged on long-term value (mostly the season and ESPN's projection), " +
       "so a player coming back from injury isn't mistaken for a bench player, and the team's best eight players and anyone rostered in 60% or more of ESPN leagues are never suggested as drops. " +
       "Suggestions in a list are alternatives, not a sequence."];
     if (limit && limit.limit) {
       note.push(limit.per_day
-        ? "Your league allows " + plural(limit.limit, "add") + " a day."
-        : "Your league allows " + plural(limit.limit, "add") + " a matchup, and you've used " + limit.used_this_matchup + ".");
+        ? "The league allows " + plural(limit.limit, "add") + " a day."
+        : "The league allows " + plural(limit.limit, "add") + " a matchup, and " + (isMine(A) ? "you've" : A.name + " has") +
+          " used " + limit.used_this_matchup + ".");
     }
     setText("targets-note", note.join(" "));
     const fill = (id, moves, kind, empty) => {
@@ -1024,18 +1027,21 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     }
     if (t.deadline) note.push(t.deadline_passed ? "The trade deadline has passed." : "The trade deadline is " + formatDate(t.deadline) + ".");
     note.push("Ideas with different teams are alternatives.");
-    if (!isMine(teamA())) note.unshift("Trade ideas are worked out for your team, " + DATA.my_team.name + ", whichever team is picked above.");
+    const A = teamA();
+    const mine = isMine(A);
+    setText("trades-title", "Trade ideas" + (mine ? "" : " for " + A.name));
     setText("trades-note", note.join(" "));
-    if (t.deadline_passed || !t.suggestions.length) {
+    const ideas = (t.by_team && t.by_team[A.id]) || [];
+    if (t.deadline_passed || !ideas.length) {
       list.replaceChildren(h("li", { class: "na" }, t.deadline_passed
         ? "No trade ideas, as the deadline has passed."
-        : "No trade clearly helps you without costing the other team."));
+        : "No trade clearly helps " + (mine ? "you" : A.name) + " without costing the other team."));
       return;
     }
-    list.replaceChildren(...t.suggestions.map((trade, i) => {
-      const key = "t" + i;
-      const give = tradeSide("You give", trade.give, key + "-give");
-      const get = tradeSide("You get", trade.get, key + "-get");
+    list.replaceChildren(...ideas.map((trade, i) => {
+      const key = "t" + A.id + "-" + i;
+      const give = tradeSide(mine ? "You give" : A.name + " gives", trade.give, key + "-give");
+      const get = tradeSide(mine ? "You get" : A.name + " gets", trade.get, key + "-get");
       const pct = (value) => (typeof value === "number" ? " (" + signed(value) + "%)" : "");
       return h("li", null,
         h("p", { class: "move-line" },
@@ -1045,10 +1051,10 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
             trade.kind === "both_gain" ? "Both teams gain" : "Close to even for them")),
         h("div", { class: "trade-sides" }, give.block, get.block),
         h("p", { class: "move-gain" },
-          signed(trade.my_gain, 0) + " projected points for you" + pct(trade.my_gain_pct) + ", " +
+          signed(trade.my_gain, 0) + " projected points for " + (mine ? "you" : A.name) + pct(trade.my_gain_pct) + ", " +
           signed(trade.their_gain, 0) + " for " + trade.partner.name + pct(trade.their_gain_pct) +
           ", over the rest of the season"),
-        h("p", { class: "move-why" }, ["Value per game: you give " + trade.value_given.toFixed(1) + ", you get " +
+        h("p", { class: "move-why" }, ["Value per game: " + (mine ? "you give " : A.name + " gives ") + trade.value_given.toFixed(1) + (mine ? ", you get " : ", gets ") +
           trade.value_received.toFixed(1) + "."].concat(trade.reasons).join(" ")),
         give.panels, get.panels);
     }));
@@ -1250,9 +1256,12 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
 
   function renderWaiverSummary() {
     const w = DATA.waivers || {};
+    const A = teamA();
+    const ranks = (DATA.outlook && DATA.outlook.waiver_ranks) || {};
+    const rank = isMine(A) ? w.waiver_priority : ranks[A.id];
     const parts = [];
-    if (typeof w.waiver_priority === "number") {
-      parts.push("Your waiver priority is ", h("b", null, ordinal(w.waiver_priority)), " of " + w.team_count + ". ");
+    if (typeof rank === "number") {
+      parts.push((isMine(A) ? "Your" : possessive(A.name)) + " waiver priority is ", h("b", null, ordinal(rank)), " of " + w.team_count + ". ");
     } else {
       parts.push("ESPN didn't return a waiver priority. ");
     }
@@ -1270,7 +1279,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
 
     if (w.waiver_order && w.waiver_order.length) {
       document.getElementById("waiver-order").replaceChildren(...w.waiver_order.map((o) =>
-        h("li", { value: String(o.rank), class: o.team === DATA.my_team.name ? "mine" : null }, o.team)));
+        h("li", { value: String(o.rank), class: o.team === A.name ? "mine" : null }, o.team)));
       document.getElementById("waiver-order-wrap").hidden = false;
     }
   }
@@ -1441,6 +1450,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     renderSuggestions();
     renderTrades();
     renderTransactions();
+    renderWaiverSummary();
   }
   document.querySelectorAll('input[name="filter"], input[name="order"]').forEach((input) => {
     input.addEventListener("change", () => {
@@ -1489,7 +1499,6 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
   setupRefresh();
   setupCollapsibles();
   renderTeams();
-  renderWaiverSummary();
   renderFreeAgents();
   renderFooter();
 })();
