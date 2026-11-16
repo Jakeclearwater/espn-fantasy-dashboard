@@ -33,6 +33,16 @@ def _outlook_lines(data):
               if started and opponent else "")
     if opponent and opponent["id"] in finish:
         lines.append(f"  Projected finish: {finish[mine]:,.0f} to {finish[opponent['id']]:,.0f}{so_far}")
+    rated = []
+    for row in data["rosters"]:
+        games = list((row.get("matchups") or {}).values())
+        if row["team_id"] == mine and row["slot"] != "IR" and len(games) >= 2:
+            rated.append((sum(g["factor"] for g in games) / len(games), row["player"]))
+    if len(rated) >= 2:
+        rated.sort()
+        (low, worst), (high, best) = rated[0], rated[-1]
+        lines.append(f"  Matchups: softest week {best} ({100 * (high - 1):+.0f}%), "
+                     f"toughest {worst} ({100 * (low - 1):+.0f}%)")
     for check in (outlook.get("checks") or {}).get(mine, []):
         lines.append(f"  - {check}")
     suggestions = (data.get("suggestions") or {}).get(mine) or {}

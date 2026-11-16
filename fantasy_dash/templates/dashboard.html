@@ -181,7 +181,36 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .plan-list .move.sit { color: var(--out-ink); }
 .plan-list h5, .lineup-plan h5 { margin: 0 0 2px; color: var(--muted); font: 600 0.8rem var(--font-head); letter-spacing: 0.07em; text-transform: uppercase; }
 
-/* Controls *//* Controls */
+/* Matchups: a tinted cell plus a signed percentage, so the colour is never the only cue */
+.tone-soft { background: color-mix(in srgb, var(--clear-bg) 55%, var(--surface)); }
+.tone-soft.tone-strong { background: var(--clear-bg); }
+.tone-tough { background: color-mix(in srgb, var(--out-bg) 55%, var(--surface)); }
+.tone-tough.tone-strong { background: var(--out-bg); }
+.mu-table .tone-soft .chg, td.tone-soft.num, .defence-table td.tone-soft { color: var(--clear-ink); }
+.mu-table .tone-tough .chg, td.tone-tough.num, .defence-table td.tone-tough { color: var(--out-ink); }
+.mu-table { min-width: 560px; margin-top: 12px; }
+.mu-table td { line-height: 1.25; padding: 7px 6px; }
+.mu-table td.none { background: transparent; }
+.mu-table .opp { display: block; color: var(--ink-2); }
+.mu-table td.start .opp { color: var(--ink); font-weight: 700; }
+.mu-table .chg { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.mu-table .miss { display: block; font-size: 0.72rem; color: var(--ink-2); }
+.mu-table tbody th .player-meta { display: block; margin: 0; font-weight: 400; font-size: 0.78rem; }
+.mu-table tbody th .player-meta b { color: var(--out-ink); font-weight: 600; }
+.mu-key { margin-top: 8px; }
+.defence-table { min-width: 620px; margin-top: 10px; font-size: 0.88rem; }
+.defence-table th, .defence-table td { padding: 6px 8px; }
+.defence-table td { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.defence-table td.out-list { text-align: left; white-space: normal; color: var(--ink-2); }
+.defence-table tbody th { font: 600 0.88rem var(--font-body); text-align: left; }
+.defence-table tr.plays th { text-decoration: underline; text-underline-offset: 3px; }
+.mu-tag { margin-left: 8px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.mu-tag.tone-soft, .mu-tag.tone-tough { background: none; }
+.mu-tag.tone-soft { color: var(--clear-ink); }
+.mu-tag.tone-tough { color: var(--out-ink); }
+.mu-miss { margin-left: 6px; font-size: 0.8rem; color: var(--ink-2); }
+
+/* Controls */
 .controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 32px; margin: 0 0 18px; }
 .controls fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .controls legend {
@@ -517,6 +546,30 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     </div>
   </section>
 
+  <section class="block matchups" id="matchups" data-collapse="matchups" aria-labelledby="matchups-title">
+    <div class="block-head"><h2 id="matchups-title">Matchups this week</h2></div>
+    <div class="block-body" id="matchups-body">
+      <p class="outlook-lead" id="matchups-lead"></p>
+      <ul class="checks" id="matchups-missing"></ul>
+      <div class="table-scroll" role="region" aria-label="Each player's matchups by day" tabindex="0">
+        <table class="data days-table mu-table" id="matchups-table"></table>
+      </div>
+      <p class="section-note mu-key">Each game shows the opponent and how much players at the same position have scored against them this season, compared with their own average, adjusted for key defenders who are out. Bold: projected to start.</p>
+      <details class="method" id="defence-details">
+        <summary>How every NBA team defends each position</summary>
+        <p id="defence-note"></p>
+        <div class="table-scroll" role="region" aria-label="Defence against each position" tabindex="0">
+          <table class="data defence-table" id="defence-table"></table>
+        </div>
+      </details>
+      <details class="method">
+        <summary>How matchups are rated</summary>
+        <p>For every game this season by regular players (those averaging 8 or more), the fantasy points they scored are compared with their own season average, then totalled by the team they played and their position. A team that has held centres to 90% of their usual output is a tough matchup for centres. Early in the season a few big nights can swing these figures, so each one starts from league average and moves only as games build up, and no game is rated more than 15% either way.</p>
+        <p>Key defenders are rotation players with high steals and blocks per minute, up to three a team. When one is likely out, players at the same position get up to 3% more (half that at the next position), and up to 6% in all. Steals and blocks only partly capture defence, so this adjustment is kept small. The week projection, lineup advice and streamer picks all include these ratings.</p>
+      </details>
+    </div>
+  </section>
+
   <section class="block outlook" id="outlook" data-collapse="outlook" aria-labelledby="outlook-title">
     <div class="block-head"><h2 id="outlook-title">The week, day by day</h2></div>
     <div class="block-body" id="outlook-body">
@@ -527,7 +580,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
       <ul class="checks" id="lineup-checks"></ul>
       <details class="method">
         <summary>How the projection works</summary>
-        <p>Each player's value per game blends the last 15 days (half), the season (30%) and ESPN's projection (20%), with less weight on an average built from only a few games. Players listed out are left out until ESPN's expected return date and then counted at half value; questionable players count at half value for the next few days. When a teammate is out, a player's value goes up by their share of the minutes left behind (see News and opportunities). Each day uses the best lineup the slots allow from the players who have a game, and only starters count. ESPN locks each player at tip-off, so this assumes the lineup is set every day. It's an estimate to compare options, not a forecast to rely on.</p>
+        <p>Each player's value per game blends the last 15 days (half), the season (30%) and ESPN's projection (20%), with less weight on an average built from only a few games. Players listed out are left out until ESPN's expected return date and then counted at half value; questionable players count at half value for the next few days. When a teammate is out, a player's value goes up by their share of the minutes left behind (see News and opportunities). Each game is then scaled by how that opponent defends the player's position (see Matchups this week). Each day uses the best lineup the slots allow from the players who have a game, and only starters count. ESPN locks each player at tip-off, so this assumes the lineup is set every day. It's an estimate to compare options, not a forecast to rely on.</p>
       </details>
     </div>
   </section>
@@ -1029,13 +1082,16 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     const moveIn = new Set(plan ? plan.start.map((x) => x.player_id) : []);
     const moveOut = new Set(plan ? plan.sit.map((x) => x.player_id) : []);
     const bench = roster.filter((r) => !starters.has(r.player_id));
+    const game = (r) => r.matchups && r.matchups[day.period];
+    const vs = (r) => game(r) ? muWhere(game(r)) + " " + muPercent(game(r).factor) + ", " : "";
     const why = (r) => r.slot === "IR" ? "on IR" : values[r.player_id] === undefined
-      ? (r.status === "Out" ? "out" : "no game") : "projected below the starters";
+      ? (r.status === "Out" ? "out" : "no game")
+      : vs(r) + (game(r) && muWord(game(r).factor) === "tough" ? "tough matchup" : "projected below the starters");
     document.getElementById("lineup-plan").replaceChildren(
       h("div", null, h("h5", null, "Start (" + start.length + " of " + (o.slots || 10) + ")"), h("ul", { class: "plan-list" }, start.map((r) =>
         h("li", null, h("span", null, h("span", { class: "player-name" }, r.player),
           moveIn.has(r.player_id) ? h("span", { class: "move" }, "move in") : null),
-          h("span", { class: "why" }, values[r.player_id].toFixed(1) + " projected"))))),
+          h("span", { class: "why" }, vs(r) + values[r.player_id].toFixed(1) + " projected"))))),
       h("div", null, h("h5", null, "Bench"), h("ul", { class: "plan-list" }, bench.map((r) =>
         h("li", null, h("span", null, h("span", { class: "player-name" }, r.player),
           moveOut.has(r.player_id) ? h("span", { class: "move sit" }, "move out") : null),
@@ -1155,6 +1211,8 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     left.push(h("h5", null, "Games left this matchup"), d.upcoming.length
       ? h("ul", { class: "games" }, d.upcoming.map((g) => h("li", null,
           formatDay(g.tip) + (g.home ? " v " : " @ ") + g.opponent,
+          g.matchup ? h("span", { class: "mu-tag " + muTone(g.matchup.factor) }, muWord(g.matchup.factor) + " " + muPercent(g.matchup.factor)) : null,
+          g.matchup && g.matchup.missing.length ? h("span", { class: "mu-miss" }, "without " + names(g.matchup.missing)) : null,
           g.start === true ? h("span", { class: "tag" }, "projected start") : null,
           g.start === false ? h("span", { class: "tag bench" }, "projected bench") : null)))
       : h("p", { class: "na" }, "No games left this matchup."));
@@ -1193,6 +1251,131 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     return h("div", { class: "signal" },
       h("p", { class: "when" }, formatDate(sig.published), h("span", { class: "tags" }, sig.tags.map(tagLabel))),
       h("p", { class: "evidence" }, "\u201c" + sig.evidence + "\u201d"));
+  }
+
+  // ----- matchups ------------------------------------------------------------
+
+  const MU = DATA.matchups || null;
+  const STRONG = 0.08;  // tint more deeply from 8% either way
+  function muPercent(factor) {
+    const n = Math.round((factor - 1) * 100);
+    return (n > 0 ? "+" : n < 0 ? "\u2212" : "") + Math.abs(n) + "%";
+  }
+  function muWord(factor) {
+    return !MU ? "neutral" : factor >= MU.soft ? "soft" : factor <= MU.tough ? "tough" : "neutral";
+  }
+  function muTone(factor) {
+    const word = muWord(factor);
+    if (word === "neutral") return "";
+    return "tone-" + word + (Math.abs(factor - 1) >= STRONG ? " tone-strong" : "");
+  }
+  function muGames(row) {
+    return Object.entries(row.matchups || {}).map(([p, m]) => Object.assign({ period: Number(p) }, m))
+      .sort((x, y) => x.period - y.period);
+  }
+  function muAverage(games) { return games.reduce((sum, g) => sum + g.factor, 0) / games.length; }
+  function muWhere(g) { return (g.home ? "v " : "@ ") + g.opponent; }
+  function surname(name) {
+    const parts = name.split(" ");
+    const last = parts[parts.length - 1];
+    return parts.length > 2 && /^(Jr\.?|Sr\.?|II|III|IV)$/.test(last) ? parts[parts.length - 2] : last;
+  }
+
+  function renderMatchups() {
+    const section = document.getElementById("matchups");
+    const A = teamA();
+    const o = DATA.outlook || {};
+    const proj = o.projections && o.projections[A.id];
+    const days = proj ? proj.days.filter((d) => !d.done) : [];
+    if (!MU || !days.length) { section.hidden = true; return; }
+    section.hidden = false;
+    const startsOn = new Map(days.map((d) => [d.period, new Set(d.starters)]));
+    const roster = (rostersByTeam.get(A.id) || []).filter((r) => r.slot !== "IR")
+      .sort((x, y) => slotIndex(x) - slotIndex(y));
+    const rated = roster.map((row) => ({ row, games: muGames(row).filter((g) => startsOn.has(g.period)) }));
+
+    const ranked = rated.filter((x) => x.games.length >= 2)
+      .map((x) => Object.assign({ avg: muAverage(x.games) }, x)).sort((x, y) => y.avg - x.avg);
+    const lead = [];
+    const best = ranked[0];
+    const worst = ranked[ranked.length - 1];
+    const games = (x) => " (" + x.games.map(muWhere).join(", ") + "; " + muPercent(x.avg) + " on average). ";
+    if (best && best.avg >= 1.03) lead.push("Softest week: ", h("b", null, best.row.player), games(best));
+    if (worst && worst !== best && worst.avg <= 0.97) lead.push("Toughest: ", h("b", null, worst.row.player), games(worst));
+    if (!lead.length) lead.push("No one on " + (isMine(A) ? "your" : possessive(A.name)) + " roster has a much easier or harder week than usual.");
+    document.getElementById("matchups-lead").replaceChildren(...lead);
+
+    // Key defenders likely missing from games against this roster.
+    const missing = new Map();
+    for (const { row, games: list } of rated) {
+      for (const g of list) {
+        for (const name of g.missing) {
+          const key = g.opponent + "|" + name;
+          if (!missing.has(key)) missing.set(key, { name, team: g.opponent, players: new Set(), days: new Set() });
+          missing.get(key).players.add(row.player);
+          const day = days.find((d) => d.period === g.period);
+          missing.get(key).days.add(formatDay(day.first_tip || day.date));
+        }
+      }
+    }
+    document.getElementById("matchups-missing").replaceChildren(...[...missing.values()].map((m) => {
+      const info = ((MU.defenders || {})[m.team] || []).find((d) => d.player === m.name);
+      const status = info && info.status ? " (" + info.status.toLowerCase() + (info.injury ? ", " + info.injury : "") + ")" : "";
+      return h("li", null, h("b", null, m.name), status + " may miss " + m.team + "'s " +
+        [...m.days].join(" and ") + " game" + (m.days.size === 1 ? "" : "s") + ", which helps " + names([...m.players]) + ".");
+    }));
+
+    const body = h("tbody", null, rated.map(({ row, games: list }) => {
+      const byPeriod = new Map(list.map((g) => [g.period, g]));
+      return h("tr", null,
+        h("th", { scope: "row" }, row.player, h("span", { class: "player-meta" }, [row.nba_team, row.position].filter(Boolean).join(" "),
+          row.status === "Out" || row.status === "Questionable" ? h("b", null, " " + row.status.toLowerCase()) : null)),
+        days.map((d) => {
+          const g = byPeriod.get(d.period);
+          if (!g) return h("td", { class: "none" }, h("span", { class: "vh" }, "No game"));
+          const start = startsOn.get(d.period).has(row.player_id);
+          return h("td", { class: ["mu", muTone(g.factor), start ? "start" : ""].filter(Boolean).join(" ") },
+            h("span", { class: "opp" }, muWhere(g)),
+            h("span", { class: "chg" }, muPercent(g.factor)),
+            g.missing.length ? h("span", { class: "miss" }, "no " + g.missing.map(surname).join(", ")) : null,
+            h("span", { class: "vh" }, start ? ", projected start" : ", projected bench"));
+        }),
+        list.length ? h("td", { class: "num " + muTone(muAverage(list)) }, muPercent(muAverage(list)))
+          : h("td", { class: "num na" }, "\u2013"));
+    }));
+    document.getElementById("matchups-table").replaceChildren(
+      h("caption", { class: "vh" }, "Matchups by day for " + A.name),
+      h("thead", null, h("tr", null, h("th", { scope: "col" }, "Player"),
+        days.map((d) => h("th", { scope: "col" }, formatDay(d.first_tip || d.date))),
+        h("th", { scope: "col", class: "num" }, "Week"))),
+      body);
+    renderDefence(rated, days);
+  }
+
+  function renderDefence(rated, days) {
+    const periods = new Set(days.map((d) => d.period));
+    const facing = new Map();
+    for (const { games: list } of rated) for (const g of list) facing.set(g.opponent, (facing.get(g.opponent) || 0) + 1);
+    setText("defence-note", "Points scored against each team compared with players' own averages, softest overall first, from " +
+      MU.players_counted + " players' game logs. Underlined teams play " + (isMine(teamA()) ? "your" : possessive(teamA().name)) +
+      " players this week.");
+    const positions = MU.positions || [];
+    const rows = Object.entries(MU.teams || {}).sort((x, y) => y[1].overall - x[1].overall).map(([team, t]) => {
+      const out = ((MU.defenders || {})[team] || []).filter((d) => d.out_periods.some((p) => periods.has(p)));
+      return h("tr", { class: facing.has(team) ? "plays" : null },
+        h("th", { scope: "row" }, team),
+        h("td", { class: muTone(t.overall) }, muPercent(t.overall)),
+        positions.map((pos) => h("td", { class: muTone(t[pos]) }, muPercent(t[pos]))),
+        h("td", null, facing.get(team) || ""),
+        h("td", { class: "out-list" }, out.map((d) => d.player + " (" + (d.status || "out").toLowerCase() + ")").join(", ")));
+    });
+    document.getElementById("defence-table").replaceChildren(
+      h("caption", { class: "vh" }, "Fantasy points allowed against players' own averages, by NBA team and position"),
+      h("thead", null, h("tr", null, h("th", { scope: "col" }, "Team"), h("th", { scope: "col", class: "num" }, "All"),
+        positions.map((pos) => h("th", { scope: "col", class: "num" }, pos)),
+        h("th", { scope: "col", class: "num" }, "Your games"),
+        h("th", { scope: "col" }, "Key defenders out this week"))),
+      h("tbody", null, rows));
   }
 
   // ----- week outlook ------------------------------------------------------
@@ -1601,16 +1784,17 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     const players = DATA.free_agents || [];
     const table = document.getElementById("fa-table");
     const shown = state.faExpanded ? players : players.slice(0, FA_INITIAL_ROWS);
-    setText("fa-note", (DATA.league.average_label || "Averages") + ". Rostered is the share of all ESPN leagues. Sorted by the last-15-day average.");
+    setText("fa-note", (DATA.league.average_label || "Averages") + ". Matchups is the average rating of the games left this matchup (see Matchups this week). Rostered is the share of all ESPN leagues. Sorted by the last-15-day average.");
 
     const body = h("tbody");
-    if (!players.length) body.append(h("tr", { class: "empty" }, h("td", { colspan: "5" }, "No free agents were returned.")));
+    if (!players.length) body.append(h("tr", { class: "empty" }, h("td", { colspan: "6" }, "No free agents were returned.")));
     for (const p of shown) {
       const left = gamesLeft(p.player_id);
       const meta = [p.nba_team, p.positions, p.availability === "Waivers" ? "on waivers" : null,
         left === null ? null : plural(left, "game") + " left"].filter(Boolean).join("  ");
       const flagged = p.status && p.status !== "Clear";
-      const toggle = detailToggle("fa-" + p.player_id, p.player_id, rowContainer(5));
+      const toggle = detailToggle("fa-" + p.player_id, p.player_id, rowContainer(6));
+      const faGames = muGames(p);
       body.append(h("tr", null,
         h("td", null,
           h("span", { class: "player-name" }, p.player),
@@ -1622,6 +1806,8 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
         numberCell(p.last_7_avg),
         numberCell(p.last_15_avg),
         numberCell(p.season_avg),
+        faGames.length ? h("td", { class: "num " + muTone(muAverage(faGames)), title: faGames.map(muWhere).join(", ") },
+          muPercent(muAverage(faGames))) : h("td", { class: "num na" }, "\u2013"),
         numberCell(p.percent_rostered, "%")
       ), toggle.outer);
     }
@@ -1632,6 +1818,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
         h("th", { scope: "col", class: "num" }, "Last 7"),
         h("th", { scope: "col", class: "num" }, "Last 15"),
         h("th", { scope: "col", class: "num" }, "Season"),
+        h("th", { scope: "col", class: "num" }, "Matchups"),
         h("th", { scope: "col", class: "num" }, "Rostered")
       )),
       body
@@ -1752,6 +1939,7 @@ tr.detail-row > td { padding: 4px 12px 16px; background: var(--surface); }
     renderMasthead();
     renderTodo();
     renderNextLineup();
+    renderMatchups();
     renderOutlook();
     renderSheets();
     renderNews();

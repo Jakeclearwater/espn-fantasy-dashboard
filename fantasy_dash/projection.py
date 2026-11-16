@@ -1,7 +1,8 @@
 """Week projections: who can play each day, and the best lineup from them.
 
 A player's value per game is a blend of recent form, the full season and
-ESPN's projection. Each remaining day, the players with a game and a chance
+ESPN's projection, adjusted for how that day's opponent defends the
+player's position. Each remaining day, the players with a game and a chance
 of playing are put into the best lineup the league's slots allow, and only
 starters count. That assumes lineups are set well every day, which ESPN's
 per-game lineup locks make possible.
@@ -86,6 +87,12 @@ def value_on(row, game_date):
     return per_game_value(row) + boost_on(row, game_date)
 
 
+def matchup_factor(row, period):
+    """How the opponent that day tends to defend the player (see matchups.py); 1 if not rated."""
+    matchup = (row.get("matchups") or {}).get(period)
+    return matchup["factor"] if matchup else 1.0
+
+
 def play_chance(row, game_date, today=None):
     """Chance the player plays on a US date, from their injury status.
 
@@ -167,7 +174,7 @@ def project_team(rows, calendar, days, now, slots):
             if row["slot"] == "IR" or not game or game.tip <= now:
                 continue
             games[row["player_id"]] += 1
-            value = value_on(row, game_date) * play_chance(row, game_date, today)
+            value = value_on(row, game_date) * matchup_factor(row, period) * play_chance(row, game_date, today)
             if value > 0:
                 playing.append((row["player_id"], value, row.get("eligible_slots") or []))
         starters = best_lineup(playing, slots)

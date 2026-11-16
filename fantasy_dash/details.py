@@ -1,5 +1,5 @@
 """The expandable detail behind each player row: averages, stat line, games
-this week, recent games, injury details, ownership and recent notes."""
+this week with how each opponent defends, recent games, injury details, ownership and recent notes."""
 
 from datetime import date
 
@@ -81,13 +81,13 @@ def _ownership(card_player):
 
 
 def build_details(cards, notes, calendar, days, now, starters_by_day, year, points_league,
-                  signals=None, boosts=None):
+                  signals=None, boosts=None, matchups=None):
     """{player_id: detail} for every player with a card.
 
     starters_by_day: {player_id: {period: True if projected to start}} for
     players on the two rosters in the matchup, so their games show start or bench.
     """
-    signals, boosts = signals or {}, boosts or {}
+    signals, boosts, matchups = signals or {}, boosts or {}, matchups or {}
     details = {}
     for player_id, (player, entry) in cards.items():
         card_player = entry.get("player") or {}
@@ -102,6 +102,7 @@ def build_details(cards, notes, calendar, days, now, starters_by_day, year, poin
                     "opponent": game.opponent,
                     "home": game.home,
                     "start": None if starts is None else starts.get(period, False),
+                    "matchup": matchups.get(player_id, {}).get(period),
                 })
         totals = (player.stats.get(f"{year}_total") or {}).get("total") or {}
         games = totals.get("GP") or 0

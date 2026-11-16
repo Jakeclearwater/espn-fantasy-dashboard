@@ -18,6 +18,7 @@ It writes these files to `out/`:
 | `waivers.json` | Your waiver priority, the full waiver order, FAAB remaining and the next waiver run |
 | `outlook.json` | The week ahead: matchup days, projected starters and points by day for you and your opponent, lineup checks and waiver suggestions |
 | `trades.json` | Trade ideas with each other team: who you'd give and get, the projected effect on both teams for the rest of the season, and why |
+| `matchups.json` | How each NBA team defends each position, and each team's key defenders with the days they're likely out |
 | `news.json` | Injured regulars and who benefits, plus the tagged notes for every player |
 | `players.json` | Detail for your players, your opponent's and the listed free agents: averages, per-game stats, games this week, recent games, injury details, ownership and recent notes |
 | `dashboard.html` | A standalone page: the week outlook, your team and your opponent side by side, waiver suggestions, free agents and league transactions |
@@ -30,7 +31,7 @@ The top of the page is a scoreboard for the picked team and its opponent (any tw
 
 Below it, the page is split into tabs:
 
-- **Matchup.** A to-do list of the changes most worth making, each with the points it's projected to add (and, for a pickup, how it moves the chance to win): lineup changes for the next game day, the best pickup, the best trade idea, teammates' injuries worth knowing about and role changes in the latest notes. Then the best lineup for the next game day, and the week day by day.
+- **Matchup.** A to-do list of the changes most worth making, each with the points it's projected to add (and, for a pickup, how it moves the chance to win): lineup changes for the next game day, the best pickup, the best trade idea, teammates' injuries worth knowing about and role changes in the latest notes. Then the best lineup for the next game day, the week's matchups, and the week day by day.
 - **Rosters.** The two roster sheets, with the injury details described below.
 - **Players.** Who to target on waivers, the top free agents and recent league transactions.
 - **Trades.** Trade ideas for the picked team.
@@ -41,6 +42,7 @@ Every section has a Hide/Show button, and the page remembers the tab and section
 - **This week.** The matchup still being played, or the next one once the current one has no games left, with the score so far, a projected finish, and a day-by-day grid of how many of each team's players have games. Days with empty lineup slots are highlighted, and a short list of lineup checks points out things like an out player in an active slot.
 - **Roster sheets.** Your team and your opponent's, with each player's status, injury, latest note, games left this matchup and a source line. Toggles switch between all players and injury concerns, and between lineup order and most urgent first.
 - **Player details.** Every player row, free agent and suggestion has a Details button. It opens fantasy points per game for the season, last 30, 15 and 7 days and ESPN's projection; a per-game stat line; games left this matchup (with projected start or bench for rostered players); the last five games; injury details with ESPN's expected return date; how widely the player is rostered; and the latest notes.
+- **Matchups this week.** A grid of the picked team's players by day: who they play, and how much players at the same position have scored against that team this season compared with their own averages (green softer, red tougher, with the percentage). Key defenders who are likely out (high steals and blocks per minute, up to three a team) add a small lift for opponents at their position, and are named in the grid. Below it, a table of how all 30 NBA teams defend each position, with key defenders out this week. These ratings feed the week projection, the lineup advice and the streamer picks; the free-agent table shows each player's average matchup for the games left.
 - **News and opportunities.** Regulars who are out this week, the minutes and shots they leave behind, and which teammates (yours, other teams' or free agents) are best placed to take them, with the projected boost. Below that, what the latest Rotowire notes say about roles, returns and teammates being out, with the sentence that shows it.
 - **Who to target.** Suggested adds and drops in three lists: the best adds for the rest of the season, streamers for this matchup, and injured free agents worth watching. Each one says why and how the player can be added.
 - **Free agents and transactions.** The top free agents by last-15-day average and the league's recent moves.

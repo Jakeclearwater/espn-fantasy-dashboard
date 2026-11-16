@@ -211,6 +211,7 @@ def roster_rows(league):
                     "positions": positions(player.eligibleSlots),
                     **_blank_injury_fields(),
                     "team_id": team.team_id,
+                    "position": player.position,
                     "player_id": player.playerId,
                     "espn_status": espn_status(player.injuryStatus),
                     **_form_fields(player, league.year, points_league),
@@ -300,6 +301,7 @@ def free_agent_rows(league, entries, top):
                 "shots": form["shots"],
                 "eligible_slots": form["eligible_slots"],
                 "expected_return": form["expected_return"],
+                "position": player.position,
                 "waiver_clears": (
                     datetime.fromtimestamp(clears / 1000, tz=timezone.utc).isoformat(timespec="minutes")
                     if entry.get("status") == "WAIVERS" and isinstance(clears, (int, float)) else None

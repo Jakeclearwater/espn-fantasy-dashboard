@@ -8,6 +8,7 @@ positions and game days all count, not just averages.
 from datetime import datetime
 
 from .injuries import format_local
+from .matchups import SOFT, TOUGH, describe
 from .nba_report import ET
 from .projection import per_game_value, play_chance, project_team, talent_value
 
@@ -113,12 +114,25 @@ def _news(row, days, calendar):
     return lines
 
 
+def _matchups(row):
+    """'Matchups left: v WAS (soft, +9%), @ BOS (tough, -7%).' when any game stands out."""
+    games = [m for _, m in sorted((row.get("matchups") or {}).items())]
+    if not any(m["factor"] >= SOFT or m["factor"] <= TOUGH for m in games):
+        return []
+    line = f"Matchups left: {', '.join(describe(m) for m in games)}."
+    missing = sorted({name for m in games for name in m["missing"]})
+    if missing:
+        line += f" Opponents missing {_join(missing)}."
+    return [line]
+
+
 def _reasons(fa, drop, fa_games, days, calendar, kept_reason=None):
     reasons = [f"{fa['player']}: {_form(fa)}. {drop['player']}: {_form(drop)}."]
     reasons.append(f"Long-term value, which leans on the season and ESPN's projection: "
                    f"{talent_value(fa):.1f} a game against {talent_value(drop):.1f}.")
     if fa_games:
         reasons.append(f"{fa_games} game{'s' if fa_games != 1 else ''} left this matchup.")
+    reasons.extend(_matchups(fa))
     reasons.extend(_news(fa, days, calendar))
     if fa["status"] in ("Questionable", "Day-to-day"):
         reasons.append(f"Listed {fa['status'].lower()}" + (f" ({fa['injury']})." if fa.get("injury") else "."))
@@ -272,16 +286,21 @@ def next_lineup(rows, projection, local_tz=None):
     for row in active:
         if row["player_id"] in best:
             continue
+        matchup = (row.get("matchups") or {}).get(day["period"])
         if row["player_id"] not in values:
             reason = "out" if row["status"] == "Out" else "no game"
+        elif matchup and matchup["factor"] <= TOUGH:
+            reason = "tough matchup"
         else:
             reason = "lower projection"
-        sit.append({"player": row["player"], "player_id": row["player_id"], "slot": row["slot"], "reason": reason})
+        sit.append({"player": row["player"], "player_id": row["player_id"], "slot": row["slot"], "reason": reason,
+                    "matchup": matchup})
     return {
         "period": day["period"],
         "first_tip": day["first_tip"],
         "start": [{"player": r["player"], "player_id": r["player_id"], "value": values[r["player_id"]],
-                   "positions": r.get("positions")} for r in sorted(start, key=lambda r: -values[r["player_id"]])],
+                   "positions": r.get("positions"), "matchup": (r.get("matchups") or {}).get(day["period"])}
+                  for r in sorted(start, key=lambda r: -values[r["player_id"]])],
         "sit": sit,
         "gain": round(gain, 1),
     }

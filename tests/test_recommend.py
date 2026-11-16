@@ -102,3 +102,16 @@ def test_player_details_cover_cards_games_news_and_notes(data):
     assert all(g["start"] in (True, False) for g in edey["upcoming"])  # rostered: start or bench
     tyson = data["details"][402]
     assert all(g["start"] is None for g in tyson["upcoming"])  # free agent: no lineup yet
+
+
+def test_matchups_are_rated_for_the_week(data):
+    m = data["matchups"]
+    assert m["positions"] == ["PG", "SG", "SF", "PF", "C"]
+    assert m["soft"] > 1 > m["tough"]
+    rated = [r for r in data["rosters"] + data["free_agents"] if r.get("matchups")]
+    assert rated and all(r["position"] in m["positions"] for r in rated)
+    for r in rated:
+        for game in r["matchups"].values():
+            assert 0.85 <= game["factor"] <= 1.15 and game["opponent"]
+    upcoming = [g for d in data["details"].values() for g in d["upcoming"]]
+    assert any(g["matchup"] for g in upcoming)

@@ -4,8 +4,8 @@
     python export.py [--team NAME] [--top N] [--days N] [--no-html] [--serve [--port N]]
 
 Writes out/rosters.json, out/free_agents.json, out/transactions.json,
-out/waivers.json, out/outlook.json, out/trades.json, out/players.json and
-out/dashboard.html,
+out/waivers.json, out/outlook.json, out/matchups.json, out/news.json,
+out/trades.json, out/players.json and out/dashboard.html,
 then prints a short summary. With --serve it then keeps running and serves
 the dashboard on this computer, where a Refresh button reruns the export.
 """
@@ -18,8 +18,8 @@ import webbrowser
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fantasy_dash import (config, dashboard, details, espn_source, injuries, nba_report, news, projection,
-                          recommend, schedule, summary, trades)
+from fantasy_dash import (config, dashboard, details, espn_source, injuries, matchups, nba_report, news,
+                          projection, recommend, schedule, summary, trades)
 
 ROOT = Path(__file__).resolve().parent
 OUT_DIR = ROOT / "out"
@@ -119,13 +119,24 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
         injuries.reconcile(row, index, now, REPORT_LOOKBACK_DAYS, local_tz)
 
     everyone_ids = {r["player_id"] for r in everyone}
+    # Less-owned free agents too: their game logs help rate each team's
+    # defence, and their injury status shows which defenders are missing.
+    defence_rows = []
+    if pool:
+        try:
+            defence_rows = [r for r in espn_source.free_agent_rows(league, pool, len(pool))
+                            if r["player_id"] not in everyone_ids]
+        except espn_source.EspnError:
+            defence_rows = []
+    for row in defence_rows:
+        injuries.reconcile(row, index, now, REPORT_LOOKBACK_DAYS, local_tz)
     log("Loading player cards and notes for the whole league...")
     try:
-        cards = espn_source.player_cards(league, everyone_ids)
+        cards = espn_source.player_cards(league, everyone_ids | {r["player_id"] for r in defence_rows})
     except espn_source.EspnError as exc:
         cards = {}
         warnings.append(f"Player details were skipped. {exc}")
-    for row in everyone:  # the full card has the most reliable return date and ownership
+    for row in everyone + defence_rows:  # the full card has the most reliable return date and ownership
         if row["player_id"] in cards:
             entry = cards[row["player_id"]][1]
             back, season = details.card_injury(entry)
@@ -148,6 +159,12 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
         others = [name for name in teammates.get(row["nba_team"], []) if name != row["player"]]
         row["signals"] = news.note_signals(notes.get(row["player_id"]), others, now, row["player"])
     opportunities = news.find_opportunities(everyone, now)
+
+    log("Rating matchups...")
+    rater = matchups.Matchups(
+        matchups.Defence(matchups.game_logs(cards)), matchups.key_defenders(cards, league.year),
+        {r["player_id"]: r for r in everyone + defence_rows}, calendar, now)
+    rater.attach(everyone, matchup_days)
 
     log("Projecting the week and testing waiver moves for every team...")
     pairs = espn_source.matchup_pairs(league, matchup)
@@ -181,9 +198,10 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
             for player_id in team_projection["player_games"]:
                 starters_by_day.setdefault(player_id, {})[day["period"]] = player_id in day["starters"]
     player_details = details.build_details(
-        cards, notes, calendar, matchup_days, now, starters_by_day, league.year, points_league,
+        {pid: card for pid, card in cards.items() if pid in everyone_ids}, notes, calendar, matchup_days, now, starters_by_day, league.year, points_league,
         signals={r["player_id"]: r["signals"] for r in everyone},
-        boosts={r["player_id"]: r.get("boosts", []) for r in everyone})
+        boosts={r["player_id"]: r.get("boosts", []) for r in everyone},
+        matchups={r["player_id"]: r.get("matchups", {}) for r in everyone})
 
     scores = {}
     try:
@@ -223,6 +241,7 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
             }
 
     generated_at = now.isoformat(timespec="seconds")
+    matchup_summary = rater.summary(matchup_days)
     team_names = {r["player_id"]: r["team"] for r in rows}
     files = {
         "rosters.json": {
@@ -245,6 +264,7 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
         },
         "waivers.json": {"generated_at": generated_at, **waivers},
         "outlook.json": {"generated_at": generated_at, **outlook, "suggestions": suggestions},
+        "matchups.json": {"generated_at": generated_at, **matchup_summary},
         "news.json": {"generated_at": generated_at, "opportunities": opportunities,
                       "signals": {r["player_id"]: r["signals"] for r in everyone if r["signals"]}},
         "trades.json": {"generated_at": generated_at, **trade_ideas},
@@ -280,6 +300,7 @@ def build_export(league, team_name, top, days, now, fetch_reports=None,
         "suggestions": suggestions,
         "trades": trade_ideas,
         "news": {"opportunities": opportunities},
+        "matchups": matchup_summary,
         "details": player_details,
         "injury_sources": {
             "lookback_days": REPORT_LOOKBACK_DAYS,
